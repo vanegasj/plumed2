@@ -22,6 +22,7 @@
 #include "LinkCells.h"
 #include "Communicator.h"
 #include "Tools.h"
+#include <iostream>
 
 namespace PLMD{
 
@@ -51,9 +52,10 @@ void LinkCells::buildCellLists( const std::vector<Vector>& pos, const std::vecto
     allcells.resize( pos.size() ); lcell_lists.resize( pos.size() ); 
   }
 
-  if( !mypbc.isOrthorombic() ){
-     ncells[0]=ncells[1]=ncells[2]=1;
-  } else {
+//  if( !mypbc.isOrthorombic() ){
+//     ncells[0]=ncells[1]=ncells[2]=1;
+//  } else {
+   {
      ncells[0] = std::floor( mypbc.getBox().getRow(0).modulo() / link_cutoff );
      if( ncells[0]==0 ) ncells[0]=1;
      ncells[1] = std::floor( mypbc.getBox().getRow(1).modulo() / link_cutoff );
@@ -61,6 +63,7 @@ void LinkCells::buildCellLists( const std::vector<Vector>& pos, const std::vecto
      ncells[2] = std::floor( mypbc.getBox().getRow(2).modulo() / link_cutoff );
      if( ncells[2]==0 ) ncells[2]=1;
   }
+std::cerr<<"Number of cells: "<<ncells[0]<<" "<<ncells[1]<<" "<<ncells[2]<<"\n";
   // Setup the strides
   nstride[0]=1; nstride[1]=ncells[0]; nstride[2]=ncells[0]*ncells[1];
 
@@ -133,6 +136,7 @@ std::vector<unsigned> LinkCells::findMyCell( const Vector& pos ) const {
      celn[j] = std::floor( ( Tools::pbc(fpos[j]) + 0.5 ) * ncells[j] );
      plumed_assert( celn[j]>=0 && celn[j]<ncells[j] ); // Check that atom is in box  
   }
+std::cerr<<"findMyCell: "<<pos<<" "<<celn[0]<<" "<<celn[1]<<" "<<celn[2]<<"\n";
   return celn;
 }
 
