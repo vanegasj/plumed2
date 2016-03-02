@@ -58,8 +58,15 @@ PLUMED_MAIN_STATIC := $(PLUMED_LIBDIR)plumed
 PLUMED_MAIN_SHARED := $(PLUMED_LIBDIR)plumed-shared
 PLUMED_MAIN_RUNTIME := $(PLUMED_LIBDIR)plumed-runtime
 
+# vim syntax file
+ifeq ($(program_can_run),yes)
+	PLUMED_VIM := $(PLUMED_LIBDIR)plumed.vim
+else
+	PLUMED_VIM := 
+endif
 
-.PHONY: all links $(DIRS) $(DIRSLINKS) all-static $(PLUMED_LIBDIR)Plumed.cmake $(PLUMED_LIBDIR)Plumed.inc install $(PLUMED_SCRIPTS_EXE) install-html
+
+.PHONY: all links $(DIRS) $(DIRSLINKS) all-static $(PLUMED_LIBDIR)Plumed.cmake $(PLUMED_LIBDIR)Plumed.inc install $(PLUMED_SCRIPTS_EXE) install-html $(PLUMED_VIM)
 all:
 	$(MAKE) dirslinks
 	$(MAKE) dirs
@@ -71,6 +78,7 @@ endif
 ifneq ($(PLUMED_INSTALL),Install)
 	$(MAKE) install-build
 endif
+
 
 dirs:
 	@echo "*** Compiling all directories ***"
@@ -184,6 +192,10 @@ ifdef SOEXT
 endif
 # modulefile
 	cp install/modulefile "$(DESTDIR)$(libdir)/$(program_name)/modulefile"
+# vim syntax file
+ifeq ($(program_can_run),yes)
+	test -f install/plumed.vim "$(DESTDIR)$(libdir)/$(program_name)/plumed.vim"
+endif
 # making everything visible:
 	chmod -R go+rX,go-w "$(DESTDIR)$(libdir)/$(program_name)"
 	chmod -R go+rX,go-w "$(DESTDIR)$(includedir)/$(program_name)"
@@ -207,6 +219,12 @@ ifdef SOEXT
 	@echo "- Set this environment variable         : PLUMED_KERNEL=$(libdir)/lib$(program_name)Kernel.$(SOEXT)"
 endif
 	@echo
+ifeq ($(program_can_run),yes)
+	@echo "A vim syntax file can be found here:"
+	@echo "$(libdir)/$(program_name)/modulefile"
+	@echo "Copy it to $(HOME)/.vim/syntax"
+	@echo "From vim, you can use :set syntax=plumed to enable it"
+endif
 	@echo "To create a tcl module that sets all the variables above, use this one as a starting point:"
 	@echo "$(libdir)/$(program_name)/modulefile"
 	@echo
@@ -259,7 +277,7 @@ $(DIRS):
 
 .PHONY: lib lib-static lib-shared lib-install lib-static-install
 
-lib: lib-static lib-shared
+lib: lib-static lib-shared $(PLUMED_VIM)
 
 lib-static: $(PLUMED_MAIN_STATIC) $(OBJ_WRAPPER) $(PLUMED_LIBDIR)Plumed.inc.static $(PLUMED_LIBDIR)Plumed.cmake.static $(PLUMED_SCRIPTS_EXE)
 
@@ -305,6 +323,9 @@ ifeq ($(PLUMED_INSTALL),Install)
 else
 	$(LDSO) -o $@ $^ $(DYNAMIC_LIBS)
 endif
+
+$(PLUMED_VIM): $(PLUMED_MAIN_STATIC)
+	../maketools/vimsyntax.sh "$(PLUMED_MAIN_STATIC)" > $@
 
 $(PLUMED_MAIN_STATIC): $(OBJ_MAIN) $(OBJ_KERNEL) $(OBJ_WRAPPER)
 	$(LD) $(LDFLAGS) $^ -o $@ $(LIBS) $(DYNAMIC_LIBS)
@@ -404,6 +425,7 @@ clean:
 	rm -f $(CLEANLIST)
 	rm -f $(PLUMED_MAIN_STATIC) $(PLUMED_MAIN_SHARED) $(PLUMED_MAIN_RUNTIME)
 	rm -f Plumed.inc* plumed-* Plumed.cmake*
+	rm -f plumed.vim
 	rm -f .lib*
 	rm -fr install/
 
