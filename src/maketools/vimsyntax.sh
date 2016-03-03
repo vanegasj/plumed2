@@ -52,9 +52,10 @@ done
 
 cat << \EOF | sed s/ACTION/$action_name/g | sed s/ACTNAME/$action_name_/g
 syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*ACTION>/ excludenl end=/$/ contains=plumedComment,plumedKeywordsACTNAME,plumedLabel,plumedString
-syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*ACTION\s+\.\.\.\s*((#.*)*$)@=/ end=/\v^\s*\.\.\.\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedLabel,plumedString
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*ACTION\s+\.\.\.\s*((#.*)*$)@=/ end=/\v^\s*\.\.\.(\s+ACTION)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedLabel,plumedString
 syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\S+:\s+ACTION/ excludenl end=/$/ contains=plumedComment,plumedKeywordsACTNAME,plumedString
-syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\S+:\s+ACTION\s+\.\.\.\s*((#.*)*$)@=/ end=/\v^\s*\.\.\.\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\z(\S+\:)\s+ACTION\s+\.\.\.\s*((#.*)*$)@=/ end=/\v^\s*\.\.\.(\s+\z1)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\z(\S+\:)\s+\.\.\.\_s+ACTION>/ end=/\v^\s*\.\.\.(\s+\z1)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString
 highlight link plumedActionACTNAME Type
 highlight link plumedKeywordsACTNAME Statement
 EOF
