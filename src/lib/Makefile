@@ -325,7 +325,7 @@ else
 endif
 
 $(PLUMED_VIM): $(PLUMED_MAIN_STATIC)
-	../maketools/vimsyntax.sh "$(PLUMED_MAIN_STATIC)" > $@
+	../maketools/vimsyntax.sh "./$(PLUMED_MAIN_STATIC)" > $@
 
 $(PLUMED_MAIN_STATIC): $(OBJ_MAIN) $(OBJ_KERNEL) $(OBJ_WRAPPER)
 	$(LD) $(LDFLAGS) $^ -o $@ $(LIBS) $(DYNAMIC_LIBS)
