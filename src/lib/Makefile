@@ -194,7 +194,7 @@ endif
 	cp install/modulefile "$(DESTDIR)$(libdir)/$(program_name)/modulefile"
 # vim syntax file
 ifeq ($(program_can_run),yes)
-	test -f install/plumed.vim "$(DESTDIR)$(libdir)/$(program_name)/plumed.vim"
+	cp install/plumed.vim "$(DESTDIR)$(libdir)/$(program_name)/plumed.vim"
 endif
 # making everything visible:
 	chmod -R go+rX,go-w "$(DESTDIR)$(libdir)/$(program_name)"
