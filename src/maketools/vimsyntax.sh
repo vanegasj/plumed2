@@ -1,23 +1,22 @@
 #! /bin/bash
 
 actions=$(
-eval "$1" manual --action 2>&1 | 
-awk '{
+eval "$1" manual --action 2>&1 | awk '{
   if(NR==1) next;
   if(NF!=1) exit;
   print $1
-}' | awk '{
-  if($1=="DISTANCE"){
-    print $1 ",option:ATOMS,flag:COMPONENTS,flag:SCALED_COMPONENTS,flag:NUMERICAL_DERIVATIVES,flag:NOPBC"
-  } else if($1=="MOVINGRESTRAINT"){
-    print $1 ",option:ARG,option:VERSE,numbered:STEP,numbered:AT,numbered:KAPPA,flag:NUMERICAL_DERIVATIVES"
-  } else if($1=="MOLECULES"){
-    print $1 ",numbered:MOL,flag:VMEAN,flag:NUMERICAL_DERIVATIVES"
-  } else if($1=="COORDINATIONNUMBER"){
-    print $1 ",option:SPECIES,option:SWITCH,option:MORE_THAN"
-  } else print
 }'
 )
+
+actions="$(
+for a in $actions
+do
+
+eval "$1" manual --action $a --vim 2>/dev/null
+
+done
+)"
+
 
 cat << \EOF
 " Vim syntax file
