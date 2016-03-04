@@ -63,7 +63,7 @@ cat << \EOF | sed s/ACTION/$action_name/g | sed s/ACTNAME/$action_name_/g
 " single line, with explicit LABEL
 " matching action at beginning of line, till the end of the line
 " can contain all the keywords associated with this action, plus strings, label, and comments
-syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*ACTION>/ excludenl end=/$/ contains=plumedComment,plumedKeywordsACTNAME,plumedLabel,plumedString fold
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*ACTION>/ excludenl end=/$/ contains=plumedComment,plumedKeywordsACTNAME,plumedLabel,plumedStringOneline fold
 " multiple line, with explicit LABEL
 " first row might contain extra words before arriving at the dots
 " thus continuation dots are matched by plumedDots
@@ -76,7 +76,7 @@ syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*ACTI
 " matching label followed by action
 " can contain all the keywords associated with this action, plus strings and comments
 " labels are not allwed
-syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*[^ #]+:\s+ACTION/ excludenl end=/$/ contains=plumedComment,plumedKeywordsACTNAME,plumedString fold
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*[^ #@][^ #]*:\s+ACTION/ excludenl end=/$/ contains=plumedComment,plumedKeywordsACTNAME,plumedStringOneline fold
 " multiple line, with label: syntax
 " first row might contain extra words before arriving at the dots
 " thus continuation dots are matched by plumedDots
@@ -84,7 +84,7 @@ syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*[^ #
 " comments and dots are not part of the match
 " ends on dots, possibly followed by the same label and possibly a comment
 " comments and initial dots are not part of the match
-syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\z([^ #]+\:)\s+ACTION>(.+\.\.\.\s*(#.*)*$)@=/ end=/\v^\s*\.\.\.(\s+\z1)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString,plumedDots fold
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\z([^ #@][^ #]*\:)\s+ACTION>(.+\.\.\.\s*(#.*)*$)@=/ end=/\v^\s*\.\.\.(\s+\z1)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString,plumedDots fold
 " this is a hack required to match the ACTION when it is in the second line
 syntax match plumedSpecialACTNAME /\v(\.\.\.\s*(#.*)*\_s*)@<=ACTION>/ contained
 highlight link plumedSpecialACTNAME Type
@@ -93,7 +93,7 @@ highlight link plumedSpecialACTNAME Type
 " matching label, dots, possibly comments, newline, then action name
 " comments, dots, and action are not part of the match
 " ends on dots possibly followed by the same label and possibly a comment
-syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\z([^ #]+\:)\s+(\.\.\.\s*(#.*)*\_s*ACTION)@=/ end=/\v^\s*\.\.\.(\s+\z1)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString,plumedSpecialACTNAME,plumedDots fold
+syntax region plumedLineACTNAME matchgroup=plumedActionACTNAME start=/\v^\s*\z([^ #@][^ #]*\:)\s+(\.\.\.\s*(#.*)*\_s*ACTION)@=/ end=/\v^\s*\.\.\.(\s+\z1)?\s*((#.*)*$)@=/ contains=plumedComment,plumedKeywordsACTNAME,plumedString,plumedSpecialACTNAME,plumedDots fold
 highlight link plumedActionACTNAME Type
 highlight link plumedKeywordsACTNAME Statement
 EOF
@@ -103,13 +103,20 @@ cat << \EOF
 " comments and strings last, with highest priority
 syntax region  plumedString start=/\v\{/  end=/\v\}/
 syntax region  plumedString start=/\v\(/  end=/\v\)/
+syntax region  plumedStringOneline start=/\v\{/  end=/\v\}/ oneline
+syntax region  plumedStringOneline start=/\v\(/  end=/\v\)/ oneline
 highlight link plumedString String
+highlight link plumedStringOneline String
 syntax match   plumedStringInKeyword /\v(<[^ #]+\=)@<=[^ #]+/ contained
 highlight link plumedStringInKeyword String
 
 " Matching label
-syntax match   plumedLabel "\v<LABEL\=[^ #]*" contained
+syntax match   plumedLabel "\v<LABEL\=[^ #]*" contained contains=plumedLabelWrong
 highlight link plumedLabel Type
+
+" Errors
+syntax match   plumedLabelWrong "\v<LABEL\=\@[^ #]*" contained
+highlight link plumedLabelWrong Error
 
 syntax region  plumedComment start="\v^\s*ENDPLUMED" end="\%$"
 syntax match   plumedComment excludenl "\v#.*$"
