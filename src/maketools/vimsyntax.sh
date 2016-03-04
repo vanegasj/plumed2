@@ -49,12 +49,9 @@ do
   (flag:*)
 # syntax match   plumedKeywordsDISTANCE "\v<COMPONENTS>" contained
     string='"\v<'${l#flag:}'>"' ;;
-  (numbered:*)
+  (*:*)
 # syntax match   plumedKeywordsMOVINGRESTRAINT "\v<KAPPA[0-9]*\=[^{ ]*" contained
     string='"\v<'${l#*:}'[0-9]*\=[^{ #]*"' ;;
-  (*:*)
-# syntax match   plumedKeywordsATOMS "\v<KAPPA[0-9]\=[^{ ]*" contained
-    string='"\v<'${l#*:}'\=[^{ #]*"' ;;
   esac
   test -n "$string" && echo "syntax match   plumedKeywords$action_name_ $string contained contains=plumedStringInKeyword"
 done
