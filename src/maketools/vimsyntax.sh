@@ -47,6 +47,9 @@ for l in $(echo "$a" | sed 's/,/ /g')
 do
   string=
   case "$l" in
+  (*:LABEL)
+# this is treated differently
+    string= ;;
   (flag:*)
 # syntax match   plumedKeywordsDISTANCE "\v<COMPONENTS>" contained
     string='"\v<'${l#flag:}'>"' ;;
@@ -55,7 +58,7 @@ do
 # notice that there is currently no way to know if numbers are allowed or not
     string='"\v<'${l#*:}'[0-9]*\=[^{ #]*"' ;;
   esac
-  test -n "$string" && echo "syntax match   plumedKeywords$action_name_ $string contained"
+  test -n "$string" && echo "syntax match   plumedKeywords$action_name_ $string contained contains=plumedStringInKeyword"
 done
 
 cat << \EOF | sed s/ACTION/$action_name/g | sed s/ACTNAME/$action_name_/g
@@ -103,7 +106,9 @@ cat << \EOF
 syntax region  plumedString start=/\v\{/  end=/\v\}/
 syntax region  plumedString start=/\v\(/  end=/\v\)/
 highlight link plumedString String
-syntax region  plumedComment start="\v^\S*ENDPLUMED" end="\%$"
+syntax match   plumedStringInKeyword /\v(\S+\=)@<=\S*/ contained
+highlight link plumedStringInKeyword String
+syntax region  plumedComment start="\v^\s*ENDPLUMED" end="\%$"
 syntax match   plumedComment excludenl "\v#.*$"
 highlight link plumedComment Comment
 EOF
