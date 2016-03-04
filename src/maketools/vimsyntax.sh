@@ -30,7 +30,7 @@ endif
 set iskeyword=33,34,36-126
 
 " Matching label
-syntax match   plumedLabel "\v<LABEL\=\S*" contained
+syntax match   plumedLabel "\v<LABEL\=\w*" contained
 highlight link plumedLabel Type
 
 " Matching dots, possibly followed by a comment
