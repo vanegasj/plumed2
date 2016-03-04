@@ -305,7 +305,7 @@ void Keywords::print_vim() const {
      if( (types.find(keys[i])->second).isFlag() ){
          printf( ",flag:%s", keys[i].c_str() );
      } else {
-         if( numbered(keys[i]) ) printf(",numbered:%s",keys[i].c_str() );
+         if( allowmultiple.find(keys[i])->second ) printf(",numbered:%s",keys[i].c_str() );
          else printf(",option:%s",keys[i].c_str() );
      }  
   }
