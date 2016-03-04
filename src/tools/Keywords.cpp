@@ -301,7 +301,14 @@ void Keywords::print_template(const std::string& actionname, bool include_option
 }
 
 void Keywords::print_vim() const {
-  for(unsigned i=0;i<keys.size();++i) printf( ",%s:%s",(types.find(keys[i])->second).toString().c_str(), keys[i].c_str() );
+  for(unsigned i=0;i<keys.size();++i){
+     if( (types.find(keys[i])->second).isFlag() ){
+         printf( ",flag:%s", keys[i].c_str() );
+     } else {
+         if( numbered(keys[i]) ) printf(",numbered:%s",keys[i].c_str() );
+         else printf(",option:%s",keys[i].c_str() );
+     }  
+  }
 }
 
 void Keywords::print_html() const {
