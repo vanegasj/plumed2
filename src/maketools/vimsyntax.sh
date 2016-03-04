@@ -1,7 +1,7 @@
 #! /bin/bash
 
 actions=$(
-eval "$1" manual --action 2>&1 | awk '{
+eval "$1" --no-mpi manual --action 2>&1 | awk '{
   if(NR==1) next;
   if(NF!=1) exit;
   print $1
@@ -12,7 +12,7 @@ actions="$(
 for a in $actions
 do
 
-eval "$1" manual --action $a --vim 2>/dev/null
+eval "$1" --no-mpi manual --action $a --vim 2>/dev/null
 
 done
 )"
