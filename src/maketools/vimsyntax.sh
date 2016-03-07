@@ -98,10 +98,8 @@ EOF
 done
 cat << \EOF
 " comments and strings last, with highest priority
-syntax region  plumedString start=/\v\{/  end=/\v\}/
-syntax region  plumedString start=/\v\(/  end=/\v\)/
-syntax region  plumedStringOneline start=/\v\{/  end=/\v\}/ oneline
-syntax region  plumedStringOneline start=/\v\(/  end=/\v\)/ oneline
+syntax region  plumedString start=/\v\{/  end=/\v\}/ contained
+syntax region  plumedStringOneline start=/\v\{/  end=/\v\}/ oneline contained
 highlight link plumedString String
 highlight link plumedStringOneline String
 syntax match   plumedStringInKeyword /\v(<[^ #]+\=)@<=[^ #]+/ contained
@@ -115,7 +113,7 @@ highlight link plumedLabel Type
 syntax match   plumedLabelWrong "\v<LABEL\=\@[^ #]*" contained
 highlight link plumedLabelWrong Error
 
-syntax region  plumedComment start="\v^\s*ENDPLUMED" end="\%$"
+syntax region  plumedComment start="\v^\s*ENDPLUMED>" end="\%$"
 syntax match   plumedComment excludenl "\v#.*$"
 highlight link plumedComment Comment
 EOF
