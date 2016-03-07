@@ -194,7 +194,9 @@ endif
 	cp install/modulefile "$(DESTDIR)$(libdir)/$(program_name)/modulefile"
 # vim syntax file
 ifeq ($(program_can_run),yes)
-	cp install/plumed.vim "$(DESTDIR)$(libdir)/$(program_name)/plumed.vim"
+	mkdir -p "$(DESTDIR)$(libdir)/$(program_name)"/vim
+	mkdir -p "$(DESTDIR)$(libdir)/$(program_name)"/vim/syntax
+	cp install/plumed.vim "$(DESTDIR)$(libdir)/$(program_name)/vim/syntax/$(program_name)".vim
 endif
 # making everything visible:
 	chmod -R go+rX,go-w "$(DESTDIR)$(libdir)/$(program_name)"
@@ -221,9 +223,12 @@ endif
 	@echo
 ifeq ($(program_can_run),yes)
 	@echo "A vim syntax file can be found here:"
-	@echo "$(libdir)/$(program_name)/modulefile"
+	@echo "$(libdir)/$(program_name)/vim/syntax"
 	@echo "Copy it to $(HOME)/.vim/syntax"
-	@echo "From vim, you can use :set syntax=plumed to enable it"
+	@echo "Alternatively:"
+	@echo "- Set this environment variable         : PLUMED_VIMPATH=$(libdir)/$(program_name)/vim"
+	@echo "- Add the command 'let &runtimepath.=','.\$$PLUMED_VIMPATH' to your .vimrc file"
+	@echo "From vim, you can use :set syntax=$(program_name) to enable it"
 endif
 	@echo "To create a tcl module that sets all the variables above, use this one as a starting point:"
 	@echo "$(libdir)/$(program_name)/modulefile"
@@ -325,7 +330,7 @@ else
 endif
 
 $(PLUMED_VIM): $(PLUMED_MAIN_STATIC)
-	../maketools/vimsyntax.sh "./$(PLUMED_MAIN_STATIC)" > $@
+	../maketools/vimsyntax.sh ./plumed > $@
 
 $(PLUMED_MAIN_STATIC): $(OBJ_MAIN) $(OBJ_KERNEL) $(OBJ_WRAPPER)
 	$(LD) $(LDFLAGS) $^ -o $@ $(LIBS) $(DYNAMIC_LIBS)
