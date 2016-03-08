@@ -34,10 +34,17 @@ set iskeyword=33,34,36-126
 syntax match plumedDots /\v\.\.\.(\s*(#.*)*$)@=/ contained
 highlight link plumedDots Type
 
+let plumedActions=[]
+let plumedDictionary={}
+
 EOF
 for a in $actions ; do
 action_name="${a%%,*}" 
 action_name_=$(echo $action_name | sed s/-/_/g)
+
+echo 'call add(plumedActions,{"word":"'"$action_name"'"})'
+
+dictionary='{"word":"LABEL=","menu":"add a label"}'
 
 for l in $(echo "$a" | sed 's/,/ /g')
 do
@@ -45,16 +52,31 @@ do
   case "$l" in
   (*:LABEL)
 # this is treated differently
-    string= ;;
+    string=
+  ;;
   (flag:*)
+    dictionary="$dictionary"'
+{"word":"'${l#flag:}'","menu":"(flag)"}'
 # syntax match   plumedKeywordsDISTANCE "\v<COMPONENTS>" contained
     string='"\v<'${l#flag:}'>"' ;;
+  (numbered:*)
+    dictionary="$dictionary"'
+{"word":"'${l#*:}'","menu":"(numbered)"}'
+# syntax match   plumedKeywordsMOVINGRESTRAINT "\v<KAPPA[0-9]*\=[^{ ]*" contained
+    string='"\v<'${l#*:}'[0-9]*\=[^{ #]*"' ;;
   (*:*)
+    dictionary="$dictionary"'
+{"word":"'${l#*:}'="}'
 # syntax match   plumedKeywordsMOVINGRESTRAINT "\v<KAPPA[0-9]*\=[^{ ]*" contained
     string='"\v<'${l#*:}'[0-9]*\=[^{ #]*"' ;;
   esac
   test -n "$string" && echo "syntax match   plumedKeywords$action_name_ $string contained contains=plumedStringInKeyword"
 done
+
+dictionary="$(
+  echo "$dictionary" | sort | tr '\n' ',' | sed 's/,$//'
+)"
+echo "let plumedDictionary[\"plumedLine$action_name\"]=[$dictionary]"
 
 cat << \EOF | sed s/ACTION/$action_name/g | sed s/ACTNAME/$action_name_/g
 " single line, with explicit LABEL
@@ -116,6 +138,68 @@ highlight link plumedLabelWrong Error
 syntax region  plumedComment start="\v^\s*ENDPLUMED>" end="\%$"
 syntax match   plumedComment excludenl "\v#.*$"
 highlight link plumedComment Comment
+
+" autocomplete function
+fun! CompletePlumed(findstart, base)
+" this is to find the start of the word to be completed
+          if a:findstart
+            " locate the start of the word
+            let line = getline('.')
+            let start = col('.') - 1
+            while start > 0 && line[start - 1] =~ '[a-zA-Z\_]'
+              let start -= 1
+            endwhile
+            return start
+          else
+" this is to find the match
+" first, sync syntax
+            syn sync fromstart
+" find the syntactic attribute of the present region
+            let col=col(".")
+            let line=line(".")
+            let key=""
+            if col!=1
+              let key = synIDattr(synID(line, col-1, 1), "name")
+            else
+              let stack=synstack(line,col)
+              if(len(stack)>0)
+                let key = synIDattr(stack[0], "name")
+              endif
+            endif
+            let comp=[]
+            if key ==""
+" if outside of any region, complete with list of actions
+              let comp=g:plumedActions
+            elseif has_key(g:plumedDictionary,key)
+" if inside a region in the form "plumedLineXXX"
+" complete with keywords associated to action XXX
+              let comp=g:plumedDictionary[key]
+            endif
+            " find months matching with "a:base"
+            let res = []
+            for m in comp
+" this is to allow m to be a dictionary
+" with a word and a one-liner
+              if(type(m)==type({}))
+                let n=m["word"]
+              else
+                let n=m
+              endif
+              if n =~ '^' . a:base
+                call add(res, m)
+              endif
+" in principle comp could be a heterogeneous list
+" so it should be unlet to iterate the loop
+              unlet m
+            endfor
+            return res
+          endif
+        endfun
+set omnifunc=CompletePlumed
+
+
+
+
 EOF
 
 # colors:
