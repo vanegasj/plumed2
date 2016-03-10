@@ -3,7 +3,7 @@
 VIMFILE="$PLUMED_ROOT"/src/lib/plumed.vim
 
 if [ "$PLUMED_IS_INSTALLED" = yes ] ; then
-  VIMFILE="$PLUMED_ROOT/vim/syntax/$PLUMED_PROGRAM_NAME"
+  VIMFILE="$PLUMED_ROOT/vim/syntax/$PLUMED_PROGRAM_NAME".vim
 fi
 
 if [ "$1" = --description ] ; then
@@ -25,6 +25,11 @@ Options can be:
 
 EOF
   exit 0
+fi
+
+if [ ! -f "$VIMFILE" ] ; then
+  echo "Cannot find vimfile at $VIMFILE"
+  exit 1
 fi
 
 annotate_syntax=no
