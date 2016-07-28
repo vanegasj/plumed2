@@ -28,6 +28,7 @@
 #include "SingleDomainRMSD.h"
 
 namespace PLMD {
+namespace reference {
 
 class DRMSD : public SingleDomainRMSD {
 private:
@@ -50,6 +51,7 @@ public:
   double calc( const std::vector<Vector>& pos, const Pbc& pbc, ReferenceValuePack& myder, const bool& squared ) const ;
 };
 
+}
 }
 #endif
 

@@ -22,6 +22,7 @@
 #include "RMSDBase.h"
 
 namespace PLMD{
+namespace reference {
 
 RMSDBase::RMSDBase( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -39,4 +40,5 @@ double RMSDBase::calc( const std::vector<Vector>& pos, const Pbc& pbc, Reference
   return calc( pos, myder, squared );
 }
 
+}
 }

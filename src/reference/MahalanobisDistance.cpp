@@ -23,6 +23,7 @@
 #include "ArgumentOnlyDistance.h"
 
 namespace PLMD {
+namespace reference {
 
 class MahalanobisDistance : public ArgumentOnlyDistance {
 public:
@@ -38,4 +39,5 @@ ArgumentOnlyDistance(ro)
   hasmetric=true;
 }
 
+}
 }

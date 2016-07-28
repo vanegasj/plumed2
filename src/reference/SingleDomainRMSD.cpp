@@ -24,6 +24,7 @@
 #include "DRMSD.h"
 
 namespace PLMD {
+namespace reference {
 
 SingleDomainRMSD::SingleDomainRMSD( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -69,4 +70,5 @@ double SingleDomainRMSD::calc( const std::vector<Vector>& pos, const Pbc& pbc, c
   return calc( pos, pbc, myder, squared );
 }
 
+}
 }

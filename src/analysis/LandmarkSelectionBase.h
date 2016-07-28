@@ -69,7 +69,7 @@ protected:
 /// Calculate the distance between the ith and jth frames
   double getDistanceBetweenFrames( const unsigned& , const unsigned&  );
 /// Transfer frame i in the underlying action to the object we are going to analyze
-  void selectFrame( const unsigned& , MultiReferenceBase* );
+  void selectFrame( const unsigned& , reference::MultiReferenceBase* );
 public:
   explicit LandmarkSelectionBase( const LandmarkSelectionOptions& lo );
   virtual ~LandmarkSelectionBase();
@@ -80,8 +80,8 @@ public:
 /// Overwrite this to have a more descriptive output
   virtual std::string rest_of_description(){ return ""; };
 /// Actually do landmark selection
-  void selectLandmarks( MultiReferenceBase* );
-  virtual void select( MultiReferenceBase* )=0;
+  void selectLandmarks( reference::MultiReferenceBase* );
+  virtual void select( reference::MultiReferenceBase* )=0;
 };
 
 inline

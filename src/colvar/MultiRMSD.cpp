@@ -35,10 +35,10 @@ namespace colvar{
    
 class MultiRMSD : public Colvar {
 	
-  PLMD::MultiDomainRMSD* rmsd;
+  reference::MultiDomainRMSD* rmsd;
   bool squared; 
   MultiValue myvals;
-  ReferenceValuePack mypack;
+  reference::ReferenceValuePack mypack;
 
 public:
   explicit MultiRMSD(const ActionOptions&);
@@ -145,7 +145,7 @@ PLUMED_COLVAR_INIT(ao),squared(false),myvals(1,0), mypack(0,0,myvals)
   if( !pdb.read(reference,plumed.getAtoms().usingNaturalUnits(),0.1/atoms.getUnits().getLength()) )
       error("missing input file " + reference );
 
-  rmsd = metricRegister().create<MultiDomainRMSD>(type,pdb);
+  rmsd = reference::metricRegister().create<reference::MultiDomainRMSD>(type,pdb);
   
   std::vector<AtomNumber> atoms;
   rmsd->getAtomRequests( atoms );

@@ -25,6 +25,7 @@
 #include "tools/MultiValue.h"
 
 namespace PLMD {
+namespace reference {
 
 class ReferenceValuePack {
 friend class MultiDomainRMSD;
@@ -223,6 +224,7 @@ std::vector<Vector>& ReferenceValuePack::getAtomsDisplacementVector(){
   return displacement;
 }
 
+}
 }
 
 #endif

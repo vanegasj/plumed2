@@ -25,6 +25,7 @@
 #include "core/Value.h"
 
 namespace PLMD {
+namespace reference {
 
 ReferenceArguments::ReferenceArguments( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -227,4 +228,5 @@ void ReferenceArguments::displaceReferenceArguments( const double& weight, const
   for(unsigned i=0;i<displace.size();++i) reference_args[i] += weight*displace[i];
 }
 
+}
 }

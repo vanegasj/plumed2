@@ -57,7 +57,7 @@ AnalysisWithLandmarks::~AnalysisWithLandmarks(){
    delete landmarkSelector;
 }
 
-void AnalysisWithLandmarks::setDataToAnalyze( MultiReferenceBase* mydata ){
+void AnalysisWithLandmarks::setDataToAnalyze( reference::MultiReferenceBase* mydata ){
    data_to_analyze=mydata;
 }
 

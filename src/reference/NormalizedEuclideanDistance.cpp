@@ -23,6 +23,7 @@
 #include "ArgumentOnlyDistance.h"
 
 namespace PLMD {
+namespace reference {
 
 class NormalizedEuclideanDistance : public ArgumentOnlyDistance {
 public:
@@ -38,4 +39,5 @@ ArgumentOnlyDistance(ro)
   hasweights=true;
 }
 
+}
 }

@@ -23,6 +23,7 @@
 #include "core/Value.h"
 
 namespace PLMD {
+namespace reference {
 
 ArgumentOnlyDistance::ArgumentOnlyDistance( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -50,4 +51,5 @@ double ArgumentOnlyDistance::calc( const std::vector<Vector>& pos, const Pbc& pb
   return d;
 }
 
+}
 }

@@ -168,7 +168,7 @@ void SecondaryStructureRMSD::setSecondaryStructure( std::vector<Vector>& structu
   }
 
   // Set the reference structure
-  references.push_back( metricRegister().create<SingleDomainRMSD>( alignType ) ); 
+  references.push_back( reference::metricRegister().create<reference::SingleDomainRMSD>( alignType ) ); 
   unsigned nn=references.size()-1;
   std::vector<double> align( structure.size(), 1.0 ), displace( structure.size(), 1.0 );
   references[nn]->setBoundsOnDistances( true , bondlength );  // We always use pbc
@@ -209,7 +209,7 @@ void SecondaryStructureRMSD::performTask( const unsigned& task_index, const unsi
      }
   }
   // Create a holder for the derivatives
-  ReferenceValuePack mypack( 0, pos.size(), myvals ); mypack.setValIndex( 1 );
+  reference::ReferenceValuePack mypack( 0, pos.size(), myvals ); mypack.setValIndex( 1 );
   for(unsigned i=0;i<n;++i) mypack.setAtomIndex( i, getAtomIndex(current,i) );
 
   // And now calculate the RMSD

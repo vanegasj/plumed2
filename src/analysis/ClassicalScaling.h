@@ -26,13 +26,15 @@
 
 namespace PLMD {
 
+namespace reference {
 class PointWiseMapping;
+}
 
 namespace analysis {
 
 class ClassicalScaling {
 public:
-  static void run( PointWiseMapping* mymap );
+  static void run( reference::PointWiseMapping* mymap );
 };
 
 }

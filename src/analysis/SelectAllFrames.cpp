@@ -28,7 +28,7 @@ namespace analysis {
 class CopyAllFrames : public LandmarkSelectionBase {
 public:
   explicit CopyAllFrames( const LandmarkSelectionOptions& lo );
-  void select( MultiReferenceBase* );
+  void select( reference::MultiReferenceBase* );
 };
 
 PLUMED_REGISTER_LANDMARKS(CopyAllFrames,"ALL")
@@ -38,7 +38,7 @@ LandmarkSelectionBase(lo)
 {
 }
 
-void CopyAllFrames::select( MultiReferenceBase* myframes ){
+void CopyAllFrames::select( reference::MultiReferenceBase* myframes ){
   nlandmarks = action->getNumberOfDataPoints();
   for(unsigned i=0;i<getNumberOfFrames();++i) selectFrame( i, myframes );
 }

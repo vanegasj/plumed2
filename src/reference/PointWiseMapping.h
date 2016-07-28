@@ -25,6 +25,7 @@
 #include "MultiReferenceBase.h"
 
 namespace PLMD {
+namespace reference {
 
 class PointWiseMapping : public MultiReferenceBase {
 private:
@@ -146,5 +147,6 @@ void PointWiseMapping::setProjectionCoordinate( const unsigned& iframe, const un
   low_dim[iframe][jcoord]=coord;
 } 
 
+}
 }
 #endif

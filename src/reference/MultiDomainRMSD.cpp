@@ -25,6 +25,7 @@
 #include "tools/PDB.h"
 
 namespace PLMD {
+namespace reference {
 
 PLUMED_REGISTER_METRIC(MultiDomainRMSD,"MULTI")
 
@@ -206,4 +207,5 @@ double MultiDomainRMSD::projectAtomicDisplacementOnVector( const std::vector<Vec
   return totd;
 }
 
+}
 }

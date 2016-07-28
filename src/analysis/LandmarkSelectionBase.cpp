@@ -82,12 +82,12 @@ double LandmarkSelectionBase::getDistanceBetweenFrames( const unsigned& iframe, 
   return distance( action->getPbc(), action->getArguments(), action->data[iframe], action->data[jframe], false );
 }
 
-void LandmarkSelectionBase::selectFrame( const unsigned& iframe, MultiReferenceBase* myframes){
+void LandmarkSelectionBase::selectFrame( const unsigned& iframe, reference::MultiReferenceBase* myframes){
   plumed_assert( myframes->getNumberOfReferenceFrames()<nlandmarks );
   myframes->copyFrame( action->data[iframe] );
 }
 
-void LandmarkSelectionBase::selectLandmarks( MultiReferenceBase* myframes ){
+void LandmarkSelectionBase::selectLandmarks( reference::MultiReferenceBase* myframes ){
   // Select landmarks
   myframes->clearFrames(); select( myframes );
   plumed_assert( myframes->getNumberOfReferenceFrames()==nlandmarks );

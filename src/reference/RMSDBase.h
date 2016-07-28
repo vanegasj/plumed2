@@ -27,8 +27,9 @@
 #include "SingleDomainRMSD.h"
 
 namespace PLMD {
-
 class Pbc;
+
+namespace reference {
 
 class RMSDBase : public SingleDomainRMSD {
 // this is to avoid warnings:
@@ -40,5 +41,6 @@ public:
   virtual double calc( const std::vector<Vector>& pos, ReferenceValuePack& myder, const bool& squared ) const=0;
 };
 
+}
 }
 #endif

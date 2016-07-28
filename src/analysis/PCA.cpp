@@ -96,7 +96,7 @@ class PCA : public Analysis {
 private:
   unsigned ndim;
 /// The position of the reference configuration (the one we align to)
-  ReferenceConfiguration* myref;
+  reference::ReferenceConfiguration* myref;
 /// The eigenvectors for the atomic displacements
   Matrix<Vector> atom_eigv;
 /// The eigenvectors for the displacements in argument space
@@ -123,7 +123,7 @@ PLUMED_ANALYSIS_INIT(ao)
 {
   // Setup reference configuration
   log.printf("  performing PCA analysis using %s metric \n", getMetricName().c_str() );
-  myref = metricRegister().create<ReferenceConfiguration>( getMetricName() );
+  myref = reference::metricRegister().create<reference::ReferenceConfiguration>( getMetricName() );
   std::vector<std::string> argnames( getNumberOfArguments() );
   for(unsigned i=0;i<argnames.size();++i){
      if( getArguments()[i]->isPeriodic() ) error("cannot run PCA with periodic variables");
@@ -147,7 +147,7 @@ PCA::~PCA(){
 void PCA::performAnalysis(){
   // Align everything to the first frame
   MultiValue myval( 1, getNumberOfArguments() + 3*getNumberOfAtoms() + 9 );
-  ReferenceValuePack mypack( getNumberOfArguments(), getNumberOfAtoms(), myval );
+  reference::ReferenceValuePack mypack( getNumberOfArguments(), getNumberOfAtoms(), myval );
   for(unsigned i=0;i<getNumberOfAtoms();++i) mypack.setAtomIndex( i, i );
   // Setup some PCA storage 
   data[0]->setupPCAStorage ( mypack );
@@ -220,7 +220,7 @@ void PCA::performAnalysis(){
   // Store and print the eigenvectors
   std::vector<Vector> tmp_atoms( getNumberOfAtoms() );
   std::vector<double> tmp_args( getNumberOfArguments() );
-  Direction* tref = metricRegister().create<Direction>( "DIRECTION" );
+  reference::Direction* tref = reference::metricRegister().create<reference::Direction>( "DIRECTION" );
   tref->setNamesAndAtomNumbers( getAbsoluteIndexes(), argument_names );
   for(unsigned dim=0;dim<ndim;++dim){
      unsigned idim = covar.ncols() - 1 - dim;

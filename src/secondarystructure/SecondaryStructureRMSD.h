@@ -29,7 +29,9 @@
 
 namespace PLMD {
 
+namespace reference {
 class SingleDomainRMSD;
+}
 
 namespace secondarystructure {
 
@@ -48,7 +50,7 @@ private:
 /// The atoms involved in each of the secondary structure segments
   std::vector< std::vector<unsigned> > colvar_atoms;
 /// The list of reference configurations
-  std::vector<SingleDomainRMSD*> references;
+  std::vector<reference::SingleDomainRMSD*> references;
 /// Variables for strands cutoff
   bool align_strands;
   double s_cutoff2;

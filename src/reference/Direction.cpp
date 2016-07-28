@@ -23,6 +23,7 @@
 #include "Direction.h"
 
 namespace PLMD {
+namespace reference {
 
 PLUMED_REGISTER_METRIC(Direction,"DIRECTION")
 
@@ -70,4 +71,5 @@ void Direction::extractAtomicDisplacement( const std::vector<Vector>& pos, const
   for(unsigned i=0;i<getNumberOfAtoms();++i) dirout[i]=getReferencePosition(i); 
 }
 
+}
 }

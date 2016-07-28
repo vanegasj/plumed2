@@ -26,6 +26,7 @@
 #include "ReferenceArguments.h"
 
 namespace PLMD {
+namespace reference {
 
 class Direction :
 public ReferenceAtoms,
@@ -45,6 +46,7 @@ public:
   void zeroDirection();
 };
 
+}
 }
 
 #endif

@@ -101,8 +101,8 @@ class DRMSD : public Colvar {
 
   bool pbc_;	
   MultiValue myvals;
-  ReferenceValuePack mypack;
-  PLMD::DRMSD* drmsd_;
+  reference::ReferenceValuePack mypack;
+  reference::DRMSD* drmsd_;
 
 public:
   explicit DRMSD(const ActionOptions&);
@@ -146,7 +146,7 @@ PLUMED_COLVAR_INIT(ao), pbc_(true), myvals(1,0), mypack(0,0,myvals)
 
   // store target_ distance
   std::string type; parse("TYPE",type);
-  drmsd_= metricRegister().create<PLMD::DRMSD>( type );
+  drmsd_= reference::metricRegister().create<reference::DRMSD>( type );
   drmsd_->setBoundsOnDistances( !nopbc, lcutoff, ucutoff );
   drmsd_->set( pdb );
   checkRead();

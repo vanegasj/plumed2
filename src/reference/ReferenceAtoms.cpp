@@ -24,6 +24,7 @@
 #include "tools/PDB.h"
 
 namespace PLMD {
+namespace reference {
 
 ReferenceAtoms::ReferenceAtoms( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -122,4 +123,5 @@ void ReferenceAtoms::displaceReferenceAtoms( const double& weight, const std::ve
   for(unsigned i=0;i<dir.size();++i) reference_atoms[i] += weight*dir[i]; 
 }
 
+}
 }

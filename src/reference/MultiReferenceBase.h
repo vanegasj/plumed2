@@ -26,6 +26,7 @@
 #include "tools/Matrix.h"
 
 namespace PLMD {
+namespace reference {
 
 class MultiReferenceBase {
 private:
@@ -110,5 +111,6 @@ std::vector<ReferenceConfiguration*>& MultiReferenceBase::getReferenceConfigurat
   return frames;
 } 
 
+}
 }
 #endif

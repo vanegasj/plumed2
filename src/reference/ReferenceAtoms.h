@@ -25,8 +25,9 @@
 #include "ReferenceConfiguration.h"
 
 namespace PLMD {
-
 class Pbc;
+namespace reference {
+
 
 /// \ingroup TOOLBOX
 /// In many applications (e.g. paths, fields, property maps) it is necessary to calculate
@@ -176,6 +177,7 @@ const std::vector<AtomNumber>& ReferenceAtoms::getAbsoluteIndexes(){
 }
 
 
+}
 }
 #endif
 

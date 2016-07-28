@@ -39,6 +39,8 @@ class OFile;
 class PDB;
 class Direction;
 
+namespace reference {
+
 class ReferenceConfigurationOptions {
 friend class ReferenceConfiguration;
 private:
@@ -246,5 +248,6 @@ unsigned ReferenceConfiguration::getNumberOfReferenceArguments() const {
 
 
 
+}
 }
 #endif

@@ -27,6 +27,7 @@
 #include "SingleDomainRMSD.h"
 
 namespace PLMD {
+namespace reference {
 
 class SimpleRMSD : public SingleDomainRMSD {
 private:
@@ -42,6 +43,7 @@ public:
                          bool squared); 
 };
 
+}
 }
 
 #endif
