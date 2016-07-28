@@ -37,9 +37,9 @@ class Value;
 class Pbc;
 class OFile;
 class PDB;
-class Direction;
 
 namespace reference {
+class Direction;
 
 class ReferenceConfigurationOptions {
 friend class ReferenceConfiguration;
@@ -164,15 +164,15 @@ public:
 /// Extract a Direction giving you the displacement from some position
   void extractDisplacementVector( const std::vector<Vector>& pos, const std::vector<Value*>& vals,
                                   const std::vector<double>& arg, const bool& anflag, const bool& nflag, 
-                                  Direction& mydir ) const ;
+                                  reference::Direction& mydir ) const ;
 /// Stuff for pca
   virtual bool pcaIsEnabledForThisReference(){ return false; }
-  double projectDisplacementOnVector( const Direction& mydir, const std::vector<Vector>& pos, const std::vector<Value*>& vals, 
+  double projectDisplacementOnVector( const reference::Direction& mydir, const std::vector<Vector>& pos, const std::vector<Value*>& vals, 
                                       const std::vector<double>& arg, ReferenceValuePack& mypack ) const ;
 /// Stuff to setup pca
   virtual void setupPCAStorage( ReferenceValuePack& mypack ){ plumed_error(); }
 /// Move the reference configuration by an ammount specified using a Direction
-  void displaceReferenceConfiguration( const double& weight, Direction& dir );
+  void displaceReferenceConfiguration( const double& weight, reference::Direction& dir );
 };
 
 // inline

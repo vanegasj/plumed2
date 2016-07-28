@@ -34,15 +34,15 @@ class PathReparameterization {
 private:
 /// Packs that we use to store the vectors connecting frames
   MultiValue mydpack;
-  ReferenceValuePack mypack;
+  reference::ReferenceValuePack mypack;
 /// Direction that is used to reparameterize configurations
-  Direction mydir;
+  reference::Direction mydir;
 /// The PBC object that you would like to use to calculate distances
   const Pbc& pbc;
 /// The underlying value object for the arguments
   const std::vector<Value*>& args;
 /// Reference to path that we are reparameterizing
-  std::vector<ReferenceConfiguration*>& mypath;
+  std::vector<reference::ReferenceConfiguration*>& mypath;
 /// These are the current separations and the total length of the path
   std::vector<double> len, sumlen, sfrac;
 /// Maximum number of cycles in path reparameterization
@@ -54,7 +54,7 @@ private:
 /// Reparameterize the frames of the path between istart and iend and make the spacing equal to target
   void reparameterizePart( const int& istart, const int& iend, const double& target, const double& TOL );
 public:
-  PathReparameterization( const Pbc& ipbc, const std::vector<Value*>& iargs, std::vector<ReferenceConfiguration*>& pp ); 
+  PathReparameterization( const Pbc& ipbc, const std::vector<Value*>& iargs, std::vector<reference::ReferenceConfiguration*>& pp ); 
 /// Reparameterize the frames of the path between istart and iend so as to make the spacing constant
   void reparameterize( const int& istart, const int& iend, const double& TOL );
 };

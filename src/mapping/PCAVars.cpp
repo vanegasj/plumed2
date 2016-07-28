@@ -241,7 +241,7 @@ mypack(0,0,myvals)
      if(do_read){
         if( nfram==0 ){
            myref = reference::metricRegister().create<reference::ReferenceConfiguration>( mtype, mypdb );
-           reference::Direction* tdir = dynamic_cast<Direction*>( myref );
+           reference::Direction* tdir = dynamic_cast<reference::Direction*>( myref );
            if( tdir ) error("first frame should be reference configuration - not direction of vector");
            if( !myref->pcaIsEnabledForThisReference() ) error("can't do PCA with reference type " + mtype );
            std::vector<std::string> remarks( mypdb.getRemark() ); std::string rtype;
@@ -286,7 +286,7 @@ mypack(0,0,myvals)
 
   // Resize the matrices that will hold our eivenvectors 
   for(unsigned i=1;i<nfram;++i){ 
-      directions.push_back( Direction(ReferenceConfigurationOptions("DIRECTION")));
+      directions.push_back( reference::Direction(reference::ReferenceConfigurationOptions("DIRECTION")));
       directions[i-1].setNamesAndAtomNumbers( atoms, args );
   }
 

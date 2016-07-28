@@ -23,13 +23,13 @@
 
 namespace PLMD {
 
-PathReparameterization::PathReparameterization( const Pbc& ipbc, const std::vector<Value*>& iargs, std::vector<ReferenceConfiguration*>& pp ): 
+PathReparameterization::PathReparameterization( const Pbc& ipbc, const std::vector<Value*>& iargs, std::vector<reference::ReferenceConfiguration*>& pp ): 
 mydpack( 1, pp[0]->getNumberOfReferenceArguments() + 3*pp[0]->getNumberOfReferencePositions() + 9 ),
 mypack( pp[0]->getNumberOfReferenceArguments(), pp[0]->getNumberOfReferencePositions(), mydpack ),
 mypath(pp), 
 pbc(ipbc),
 args(iargs),
-mydir(ReferenceConfigurationOptions("DIRECTION")), 
+mydir(reference::ReferenceConfigurationOptions("DIRECTION")), 
 len(pp.size()), 
 sumlen(pp.size()), 
 sfrac(pp.size()),
@@ -76,9 +76,9 @@ void PathReparameterization::reparameterizePart( const int& istart, const int& i
       cfin = iend;
   }
 
-  std::vector<Direction> newpath;
+  std::vector<reference::Direction> newpath;
   for(unsigned i=0;i<mypath.size();++i){
-      newpath.push_back( Direction(ReferenceConfigurationOptions("DIRECTION")) );
+      newpath.push_back( reference::Direction(reference::ReferenceConfigurationOptions("DIRECTION")) );
       newpath[i].setNamesAndAtomNumbers( mypath[i]->getAbsoluteIndexes(), mypath[i]->getArgumentNames() );
   }
 

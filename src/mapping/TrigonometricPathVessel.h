@@ -40,11 +40,11 @@ private:
   double dx;
   std::vector<double> cargs;
   unsigned iclose1, iclose2;
-  Direction projdir;
+  reference::Direction projdir;
   std::vector<double> mypack1_stashd_args;
   std::vector<Vector> mypack1_stashd_atoms;
   MultiValue mydpack1, mydpack2, mydpack3;
-  ReferenceValuePack mypack1, mypack2, mypack3;
+  reference::ReferenceValuePack mypack1, mypack2, mypack3;
 public:
   static void registerKeywords( Keywords& keys );
   static void reserveKeyword( Keywords& keys );

@@ -39,7 +39,7 @@ void TrigonometricPathVessel::reserveKeyword( Keywords& keys ){
 
 TrigonometricPathVessel::TrigonometricPathVessel( const vesselbase::VesselOptions& da ):
 StoreDataVessel(da),
-projdir(ReferenceConfigurationOptions("DIRECTION")),
+projdir(reference::ReferenceConfigurationOptions("DIRECTION")),
 mydpack1( 1, getAction()->getNumberOfDerivatives() ),
 mydpack2( 1, getAction()->getNumberOfDerivatives() ),
 mydpack3( 1, getAction()->getNumberOfDerivatives() ),
@@ -61,7 +61,7 @@ mypack3( 0, 0, mydpack3 )
   zp=mymap->copyOutput( mymap->getNumberOfComponents()-1 ); zp->resizeDerivatives( mymap->getNumberOfDerivatives() );
 
   // Check we have PCA
-  ReferenceConfiguration* ref0=mymap->getReferenceConfiguration(0); 
+  reference::ReferenceConfiguration* ref0=mymap->getReferenceConfiguration(0); 
   for(unsigned i=0;i<mymap->getFullNumberOfTasks();++i){
       if( !(mymap->getReferenceConfiguration(i))->pcaIsEnabledForThisReference() ) error("pca must be implemented in order to use trigometric path");
       if( ref0->getName()!=(mymap->getReferenceConfiguration(i))->getName() ) error("cannot use mixed metrics");
@@ -132,13 +132,13 @@ void TrigonometricPathVessel::finish( const std::vector<double>& buffer ){
   double v1v1 = (mymap->getReferenceConfiguration( iclose1 ))->calculate( mymap->getPositions(), mymap->getPbc(), mymap->getArguments(), mypack1, true );
   double v3v3 = (mymap->getReferenceConfiguration( iclose2 ))->calculate( mymap->getPositions(), mymap->getPbc(), mymap->getArguments(), mypack3, true ); 
   if( iclose3<0 || iclose3>=mymap->getFullNumberOfTasks() ){
-     ReferenceConfiguration* conf2=mymap->getReferenceConfiguration( iclose1 );
+     reference::ReferenceConfiguration* conf2=mymap->getReferenceConfiguration( iclose1 );
      v2v2=(mymap->getReferenceConfiguration( iclose2 ))->calc( conf2->getReferencePositions(), mymap->getPbc(), mymap->getArguments(), 
                                                                conf2->getReferenceArguments(), mypack2, true ); 
      (mymap->getReferenceConfiguration( iclose2 ))->extractDisplacementVector( conf2->getReferencePositions(), mymap->getArguments(), 
                                                                                conf2->getReferenceArguments(), true, false, projdir );
   } else {
-     ReferenceConfiguration* conf2=mymap->getReferenceConfiguration( iclose3 );
+     reference::ReferenceConfiguration* conf2=mymap->getReferenceConfiguration( iclose3 );
      v2v2=(mymap->getReferenceConfiguration( iclose1 ))->calc( conf2->getReferencePositions(), mymap->getPbc(), mymap->getArguments(), 
                                                                conf2->getReferenceArguments(), mypack2, true ); 
      (mymap->getReferenceConfiguration( iclose1 ))->extractDisplacementVector( conf2->getReferencePositions(), mymap->getArguments(), 
@@ -176,7 +176,7 @@ void TrigonometricPathVessel::finish( const std::vector<double>& buffer ){
   }
 
   // Now compute z value
-  ReferenceConfiguration* conf2=mymap->getReferenceConfiguration( iclose1 );
+  reference::ReferenceConfiguration* conf2=mymap->getReferenceConfiguration( iclose1 );
   double v4v4=(mymap->getReferenceConfiguration( iclose2 ))->calc( conf2->getReferencePositions(), mymap->getPbc(), mymap->getArguments(), 
                                                                    conf2->getReferenceArguments(), mypack2, true );
   // Extract vector connecting frames
