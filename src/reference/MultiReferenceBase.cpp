@@ -24,6 +24,7 @@
 #include "MetricRegister.h"
 
 namespace PLMD {
+namespace reference {
 
 MultiReferenceBase::MultiReferenceBase( const std::string& type, const bool& checksoff ):
 wasSet(false),
@@ -103,4 +104,5 @@ void MultiReferenceBase::calculateAllDistances( const Pbc& pbc, const std::vecto
   comm.Sum( distances );
 }
 
+}
 }

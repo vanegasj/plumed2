@@ -25,6 +25,7 @@
 #include "core/Value.h"
 
 namespace PLMD {
+namespace reference {
 
 ReferenceArguments::ReferenceArguments( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -191,5 +192,6 @@ double ReferenceArguments::calculateArgumentDistance( const std::vector<Value*> 
     for(unsigned i=0;i<arg_ders.size();++i) myder.setArgumentDerivatives( i, arg_ders[i] );
   }
   return r;
+}
 }
 }

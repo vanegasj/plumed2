@@ -66,9 +66,9 @@ argument_names(getNumberOfArguments())
   for(unsigned i=0;i<getNumberOfArguments();++i) argument_names[i]=getPntrToArgument(i)->getName();
   // Read in the metric style
   parse("METRIC",metricname); std::vector<AtomNumber> atom_numbers;
-  ReferenceConfiguration* checkref=metricRegister().create<ReferenceConfiguration>( metricname );
+  reference::ReferenceConfiguration* checkref=reference::metricRegister().create<reference::ReferenceConfiguration>( metricname );
   // Check if we should read atoms
-  ReferenceAtoms* hasatoms=dynamic_cast<ReferenceAtoms*>( checkref );
+  reference::ReferenceAtoms* hasatoms=dynamic_cast<reference::ReferenceAtoms*>( checkref );
   if( hasatoms ){
       parseAtomList("ATOMS",atom_numbers); requestAtoms(atom_numbers);
       log.printf("  monitoring positions of atoms ");
@@ -76,7 +76,7 @@ argument_names(getNumberOfArguments())
       log.printf("\n");
   }
   // Check if we should read arguments
-  ReferenceArguments* hasargs=dynamic_cast<ReferenceArguments*>( checkref );
+  reference::ReferenceArguments* hasargs=dynamic_cast<reference::ReferenceArguments*>( checkref );
   if( !hasargs && getNumberOfArguments()!=0 ) error("use of arguments with metric type " + metricname + " is invalid");
   if( hasatoms && hasargs ) error("currently dependencies break if you have both arguments and atoms");
   // And delte the fake reference we created
@@ -99,7 +99,7 @@ argument_names(getNumberOfArguments())
           log.printf("  running analysis every %u steps\n",freq);
           ndata=freq/getStride(); data.resize( ndata ); logweights.resize( ndata );
           for(unsigned i=0;i<ndata;++i){
-             data[i]=metricRegister().create<ReferenceConfiguration>( metricname );
+             data[i]=reference::metricRegister().create<reference::ReferenceConfiguration>( metricname );
              data[i]->setNamesAndAtomNumbers( getAbsoluteIndexes(), argument_names );
           } 
       } 
@@ -182,7 +182,7 @@ void Analysis::accumulate(){
      data[idata]->setReferenceConfig( getPositions(), current_args, getMetric() );
      logweights[idata] = lweight;
   } else {
-     data.push_back( metricRegister().create<ReferenceConfiguration>( metricname ) );
+     data.push_back( reference::metricRegister().create<reference::ReferenceConfiguration>( metricname ) );
      plumed_dbg_assert( data.size()==idata+1 );
      data[idata]->setNamesAndAtomNumbers( getAbsoluteIndexes(), argument_names );
      data[idata]->setReferenceConfig( getPositions(), current_args, getMetric() );

@@ -24,6 +24,7 @@
 #include "tools/Pbc.h"
 
 namespace PLMD {
+namespace reference {
 
 PLUMED_REGISTER_METRIC(DRMSD,"DRMSD")
 
@@ -113,4 +114,5 @@ double DRMSD::calc( const std::vector<Vector>& pos, const Pbc& pbc, ReferenceVal
   return drmsd;
 }
 
+}
 }

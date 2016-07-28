@@ -22,6 +22,7 @@
 #include "ReferenceValuePack.h"
 
 namespace PLMD {
+namespace reference {
 
 ReferenceValuePack::ReferenceValuePack( const unsigned& nargs, const unsigned& natoms, MultiValue& vals ):
 boxWasSet(false),
@@ -92,4 +93,5 @@ void ReferenceValuePack::moveDerivatives( const unsigned& from, const unsigned& 
   } 
 }
 
+}
 }

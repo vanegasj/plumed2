@@ -24,6 +24,7 @@
 #include "core/Value.h"
 
 namespace PLMD {
+namespace reference {
 
 class DotProductDistance : public ArgumentOnlyDistance {
 public:
@@ -53,4 +54,5 @@ double DotProductDistance::calculateArgumentDistance( const std::vector<Value*> 
 }
 
 
+}
 }

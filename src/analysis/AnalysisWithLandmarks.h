@@ -26,7 +26,9 @@
 
 namespace PLMD {
 
+namespace reference {
 class MultiReferenceBase;
+}
 
 namespace analysis {
 
@@ -39,10 +41,10 @@ private:
 /// This object selects landmarks from the data
   LandmarkSelectionBase* landmarkSelector;
 /// A pointer to the data we are analyzing             
-  MultiReferenceBase* data_to_analyze;
+  reference::MultiReferenceBase* data_to_analyze;
 protected:
 /// Set the data that needs to be analyzed
-  void setDataToAnalyze( MultiReferenceBase* mydata );
+  void setDataToAnalyze( reference::MultiReferenceBase* mydata );
 /// Return the number of landmarks we are selecting
   unsigned getNumberOfLandmarks() const ;
 public:

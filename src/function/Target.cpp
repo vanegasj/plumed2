@@ -46,8 +46,8 @@ set of collective variables.
 class Target : public Function {
 private:
   MultiValue myvals;
-  ReferenceValuePack mypack;
-  PLMD::ArgumentOnlyDistance* target;
+  reference::ReferenceValuePack mypack;
+  reference::ArgumentOnlyDistance* target;
 public:
   explicit Target(const ActionOptions&);
   ~Target();
@@ -83,7 +83,7 @@ mypack(0,0,myvals)
   expandArgKeywordInPDB( pdb );
 
   // Generate the reference structure
-  target=metricRegister().create<ArgumentOnlyDistance>( type, pdb );
+  target=reference::metricRegister().create<reference::ArgumentOnlyDistance>( type, pdb );
 
   // Get the argument names
   std::vector<std::string> args_to_retrieve;

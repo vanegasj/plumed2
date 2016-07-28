@@ -24,6 +24,7 @@
 #include "tools/PDB.h"
 
 namespace PLMD {
+namespace reference {
 
 ReferenceAtoms::ReferenceAtoms( const ReferenceConfigurationOptions& ro ):
 ReferenceConfiguration(ro),
@@ -117,4 +118,5 @@ void ReferenceAtoms::singleDomainRequests( std::vector<AtomNumber>& numbers, boo
   }
 }
 
+}
 }

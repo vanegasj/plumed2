@@ -24,6 +24,7 @@
 #include "tools/RMSD.h"
 
 namespace PLMD{
+namespace reference {
 
 class SimpleRMSD : public RMSDBase {
 private:
@@ -76,4 +77,5 @@ double SimpleRMSD::projectAtomicDisplacementOnVector( const unsigned& iv, const 
   return proj;
 }
 
+}
 }

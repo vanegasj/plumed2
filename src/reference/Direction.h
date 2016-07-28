@@ -26,6 +26,7 @@
 #include "ReferenceArguments.h"
 
 namespace PLMD {
+namespace reference {
 
 class Direction :
 public ReferenceAtoms,
@@ -40,6 +41,7 @@ public:
   void setReferenceAtoms( const std::vector<Vector>& conf, const std::vector<double>& align_in, const std::vector<double>& displace_in ){ plumed_error(); }
 };
 
+}
 }
 
 #endif

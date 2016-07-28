@@ -26,6 +26,7 @@
 #include "tools/Matrix.h"
 
 namespace PLMD {
+namespace reference {
 
 /// \ingroup TOOLBOX
 /// In many applications (e.g. paths, fields, property maps) it is necessary to calculate
@@ -109,6 +110,7 @@ unsigned ReferenceArguments::getNumberOfReferenceArguments() const {
   return reference_args.size();
 }
 
+}
 }
 #endif
 

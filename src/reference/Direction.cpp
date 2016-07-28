@@ -23,6 +23,7 @@
 #include "Direction.h"
 
 namespace PLMD {
+namespace reference {
 
 PLUMED_REGISTER_METRIC(Direction,"DIRECTION")
 
@@ -55,4 +56,5 @@ double Direction::calc( const std::vector<Vector>& pos, const Pbc& pbc, const st
   return 0.0;
 }
 
+}
 }

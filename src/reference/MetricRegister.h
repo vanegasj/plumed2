@@ -32,8 +32,9 @@
 #include "ReferenceConfiguration.h"
 
 namespace PLMD{
-
 class PDB;
+
+namespace reference {
 
 class MetricRegister{
 private:
@@ -62,10 +63,10 @@ MetricRegister& metricRegister();
 
 #define PLUMED_REGISTER_METRIC(classname,type) \
   static class classname##RegisterMe{ \
-    static PLMD::ReferenceConfiguration * create(const PLMD::ReferenceConfigurationOptions&ro){return new classname(ro);} \
+    static PLMD::reference::ReferenceConfiguration * create(const PLMD::reference::ReferenceConfigurationOptions&ro){return new classname(ro);} \
   public: \
-    classname##RegisterMe(){PLMD::metricRegister().add(type,create);}; \
-    ~classname##RegisterMe(){PLMD::metricRegister().remove(create);}; \
+    classname##RegisterMe(){PLMD::reference::metricRegister().add(type,create);}; \
+    ~classname##RegisterMe(){PLMD::reference::metricRegister().remove(create);}; \
   } classname##RegisterMeObject;
 
 template <class T>
@@ -100,5 +101,6 @@ T* MetricRegister::create( const std::string& type, const PDB& pdb ){
   return confout;
 }
 
+}
 }
 #endif

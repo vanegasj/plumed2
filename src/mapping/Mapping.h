@@ -45,7 +45,7 @@ private:
 //  The derivative wrt to the distance from the frame
   std::vector<double> dfframes;
 /// This holds all the reference information
-  PointWiseMapping* mymap;
+  reference::PointWiseMapping* mymap;
 /// The forces on each of the derivatives (used in apply)
   std::vector<double> forcesToApply;
 protected:
@@ -54,15 +54,15 @@ protected:
 /// Get the number of frames in the path
   unsigned getNumberOfReferencePoints() const ;
 /// Finish the setup of the referenceValuePack by transfering atoms and args
-  void finishPackSetup( const unsigned& ifunc, ReferenceValuePack& mypack ) const ;
+  void finishPackSetup( const unsigned& ifunc, reference::ReferenceValuePack& mypack ) const ;
 /// Calculate the value of the distance from the ith frame
-  double calculateDistanceFunction( const unsigned& ifunc, ReferenceValuePack& myder, const bool& squared ) const ;
+  double calculateDistanceFunction( const unsigned& ifunc, reference::ReferenceValuePack& myder, const bool& squared ) const ;
 /// Store the distance function
   void storeDistanceFunction( const unsigned& ifunc );
 /// Get the value of the weight
   double getWeight( const unsigned& weight ) const ;
 /// Return a pointer to one of the reference configurations
-  ReferenceConfiguration* getReferenceConfiguration( const unsigned& ifunc );
+  reference::ReferenceConfiguration* getReferenceConfiguration( const unsigned& ifunc );
 public:
   static void registerKeywords( Keywords& keys );
   explicit Mapping(const ActionOptions&);

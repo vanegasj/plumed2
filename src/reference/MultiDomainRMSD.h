@@ -25,8 +25,9 @@
 #include "SingleDomainRMSD.h"
 
 namespace PLMD {
-
 class Pbc;
+
+namespace reference {
 
 class MultiDomainRMSD : public ReferenceAtoms {
 private:
@@ -55,6 +56,7 @@ public:
   void setupPCAStorage( ReferenceValuePack& mypack ); 
 };
 
+}
 }
 
 #endif

@@ -38,6 +38,8 @@ class Pbc;
 class OFile;
 class PDB;
 
+namespace reference {
+
 class ReferenceConfigurationOptions {
 friend class ReferenceConfiguration;
 private:
@@ -240,5 +242,6 @@ unsigned ReferenceConfiguration::getNumberOfReferenceArguments() const {
 
 
 
+}
 }
 #endif

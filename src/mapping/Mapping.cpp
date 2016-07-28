@@ -56,7 +56,7 @@ ActionWithVessel(ao)
   std::string mtype; parse("TYPE",mtype);
   bool skipchecks; parseFlag("DISABLE_CHECKS",skipchecks);
   // Setup the object that does the mapping
-  mymap = new PointWiseMapping( mtype, skipchecks ); 
+  mymap = new reference::PointWiseMapping( mtype, skipchecks ); 
  
   // Read the properties we require
   if( keywords.exists("PROPERTY") ){
@@ -166,17 +166,17 @@ std::string Mapping::getArgumentName( unsigned& iarg ){
   return "pos" + atnum + "z"; 
 } 
 
-void Mapping::finishPackSetup( const unsigned& ifunc, ReferenceValuePack& mypack ) const {
-   ReferenceConfiguration* myref=mymap->getFrame(ifunc); mypack.setValIndex(0);
+void Mapping::finishPackSetup( const unsigned& ifunc, reference::ReferenceValuePack& mypack ) const {
+   reference::ReferenceConfiguration* myref=mymap->getFrame(ifunc); mypack.setValIndex(0);
    unsigned nargs2=myref->getNumberOfReferenceArguments(); unsigned nat2=myref->getNumberOfReferencePositions();
    if( mypack.getNumberOfAtoms()!=nat2 || mypack.getNumberOfArguments()!=nargs2 ) mypack.resize( nargs2, nat2 );
    if( nat2>0 ){
-      ReferenceAtoms* myat2=dynamic_cast<ReferenceAtoms*>( myref ); plumed_dbg_assert( myat2 );
+      reference::ReferenceAtoms* myat2=dynamic_cast<reference::ReferenceAtoms*>( myref ); plumed_dbg_assert( myat2 );
       for(unsigned i=0;i<nat2;++i) mypack.setAtomIndex( i, myat2->getAtomIndex(i) );
    }
 }
 
-double Mapping::calculateDistanceFunction( const unsigned& ifunc, ReferenceValuePack& myder, const bool& squared ) const {
+double Mapping::calculateDistanceFunction( const unsigned& ifunc, reference::ReferenceValuePack& myder, const bool& squared ) const {
   // Calculate the distance
   double dd = mymap->calcDistanceFromConfiguration( ifunc, getPositions(), getPbc(), getArguments(), myder, squared );     
   // Transform distance by whatever
@@ -190,7 +190,7 @@ double Mapping::calculateDistanceFunction( const unsigned& ifunc, ReferenceValue
   return ff;
 }
 
-ReferenceConfiguration* Mapping::getReferenceConfiguration( const unsigned& ifunc ){
+reference::ReferenceConfiguration* Mapping::getReferenceConfiguration( const unsigned& ifunc ){
   return mymap->getFrame( ifunc );
 }
 

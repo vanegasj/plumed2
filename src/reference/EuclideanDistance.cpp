@@ -23,6 +23,7 @@
 #include "ArgumentOnlyDistance.h"
 
 namespace PLMD {
+namespace reference {
 
 class EuclideanDistance : public ArgumentOnlyDistance {
 public:
@@ -39,4 +40,5 @@ ArgumentOnlyDistance(ro)
 {
 }
 
+}
 }

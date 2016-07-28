@@ -26,6 +26,7 @@
 #include "tools/Matrix.h"
 
 namespace PLMD {
+namespace reference {
 
 class MultiReferenceBase {
 private:
@@ -103,5 +104,6 @@ ReferenceConfiguration* MultiReferenceBase::getFrame( const unsigned& iframe ){
    return frames[iframe];
 } 
 
+}
 }
 #endif

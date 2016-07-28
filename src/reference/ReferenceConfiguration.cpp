@@ -27,6 +27,7 @@
 #include "tools/PDB.h"
 
 namespace PLMD{
+namespace reference {
 
 ReferenceConfigurationOptions::ReferenceConfigurationOptions( const std::string& type ):
 tt(type)
@@ -185,4 +186,5 @@ double distance( const Pbc& pbc, const std::vector<Value*> & vals, ReferenceConf
   return dist1;
 }
 
+}
 }

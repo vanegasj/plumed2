@@ -23,6 +23,7 @@
 #include "FakeFrame.h"
 
 namespace PLMD {
+namespace reference {
 
 PointWiseMapping::PointWiseMapping( const std::string& type, const bool& checksoff ):
 MultiReferenceBase(type,checksoff)
@@ -98,4 +99,5 @@ void PointWiseMapping::print( const std::string& method, const double & time, OF
   }
 } 
 
+}
 }

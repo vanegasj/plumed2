@@ -25,8 +25,8 @@
 #include "ReferenceAtoms.h"
 
 namespace PLMD {
-
 class Pbc;
+namespace reference {
 
 class SingleDomainRMSD : public ReferenceAtoms {
 protected:
@@ -46,6 +46,7 @@ public:
   virtual void setupRMSDObject(){};
 };
 
+}
 }
 
 #endif

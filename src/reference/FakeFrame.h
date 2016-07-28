@@ -25,9 +25,10 @@
 #include "ReferenceConfiguration.h"
 
 namespace PLMD {
+namespace reference {
 
 class FakeFrame :
-public PLMD::ReferenceConfiguration
+public ReferenceConfiguration
 {
 public:
   explicit FakeFrame( const ReferenceConfigurationOptions& ro ) : ReferenceConfiguration(ro) {}
@@ -37,6 +38,7 @@ public:
   }
 };
 
+}
 }
 #endif
 

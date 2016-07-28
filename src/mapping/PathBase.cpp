@@ -61,7 +61,7 @@ void PathBase::calculate(){
 
 void PathBase::performTask( const unsigned& task_index, const unsigned& current, MultiValue& myvals ) const {
   // This builds a pack to hold the derivatives
-  ReferenceValuePack mypack( getNumberOfArguments(), getNumberOfAtoms(), myvals );
+  reference::ReferenceValuePack mypack( getNumberOfArguments(), getNumberOfAtoms(), myvals );
   finishPackSetup( current, mypack );
   // Calculate the distance from the frame
   double val=calculateDistanceFunction( current, mypack, true );

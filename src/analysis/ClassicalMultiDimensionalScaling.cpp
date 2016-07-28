@@ -169,7 +169,7 @@ private:
   unsigned nlow;
   std::string ofilename;
   std::string efilename;
-  PointWiseMapping* myembedding;
+  reference::PointWiseMapping* myembedding;
 public:
   static void registerKeywords( Keywords& keys );
   explicit ClassicalMultiDimensionalScaling( const ActionOptions& ao );
@@ -190,8 +190,8 @@ ClassicalMultiDimensionalScaling::ClassicalMultiDimensionalScaling( const Action
 Action(ao),
 AnalysisWithLandmarks(ao)
 {
-  myembedding = new PointWiseMapping( getMetricName(), false );
-  setDataToAnalyze( dynamic_cast<MultiReferenceBase*>(myembedding) );
+  myembedding = new reference::PointWiseMapping( getMetricName(), false );
+  setDataToAnalyze( dynamic_cast<reference::MultiReferenceBase*>(myembedding) );
 
   parse("NLOW_DIM",nlow);
   if( nlow<1 ) error("dimensionality of low dimensional space must be at least one");

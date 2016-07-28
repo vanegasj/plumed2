@@ -23,6 +23,7 @@
 #include "MetricRegister.h"
 
 namespace PLMD {
+namespace reference {
 
 class IntramolecularDRMSD : public DRMSD {
 private:
@@ -63,4 +64,5 @@ void IntramolecularDRMSD::setup_targets(){
   }
 }
 
+}
 }

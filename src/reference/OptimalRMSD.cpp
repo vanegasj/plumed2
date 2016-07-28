@@ -25,6 +25,7 @@
 #include "tools/RMSD.h"
 
 namespace PLMD{
+namespace reference {
 
 class OptimalRMSD : public RMSDBase {
 private:
@@ -101,4 +102,5 @@ double OptimalRMSD::projectAtomicDisplacementOnVector( const unsigned& iv, const
   return proj;
 }
 
+}
 }

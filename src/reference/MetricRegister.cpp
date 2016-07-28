@@ -23,6 +23,7 @@
 #include <iostream>
 
 namespace PLMD{
+namespace reference {
 
 MetricRegister::~MetricRegister(){
   if(m.size()>0){
@@ -55,4 +56,5 @@ bool MetricRegister::check(std::string type){
   return false;
 }
 
+}
 }

@@ -25,7 +25,7 @@
 namespace PLMD {
 namespace analysis {
 
-void ClassicalScaling::run( PointWiseMapping* mymap ){
+void ClassicalScaling::run( reference::PointWiseMapping* mymap ){
    // Retrieve the distances from the dimensionality reduction object
    double half=(-0.5); Matrix<double> distances( half*mymap->modifyDmat() ); 
  

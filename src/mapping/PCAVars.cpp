@@ -173,9 +173,9 @@ class PCAVars :
 private:
 /// The holders for the derivatives
   MultiValue myvals;
-  ReferenceValuePack mypack;
+  reference::ReferenceValuePack mypack;
 /// The position of the reference configuration (the one we align to)
-  ReferenceConfiguration* myref; 
+  reference::ReferenceConfiguration* myref; 
 /// The eigenvectors for the atomic displacements
   Matrix<Vector> atom_eigv;
 /// The eigenvectors for the displacements in argument space
@@ -231,7 +231,7 @@ mypack(0,0,myvals)
   if(!fp) error("could not open reference file " + reference );
 
   // Read all reference configurations 
-  MultiReferenceBase myframes( "", false );
+  reference::MultiReferenceBase myframes( "", false );
   bool do_read=true; unsigned nfram=0;
   while (do_read){
      PDB mypdb;
@@ -241,7 +241,7 @@ mypack(0,0,myvals)
      expandArgKeywordInPDB( mypdb );
      if(do_read){
         if( nfram==0 ){
-           myref = metricRegister().create<ReferenceConfiguration>( mtype, mypdb );
+           myref = reference::metricRegister().create<reference::ReferenceConfiguration>( mtype, mypdb );
            if( myref->isDirection() ) error("first frame should be reference configuration - not direction of vector");
            if( !myref->pcaIsEnabledForThisReference() ) error("can't do PCA with reference type " + mtype );
            std::vector<std::string> remarks( mypdb.getRemark() ); std::string rtype;

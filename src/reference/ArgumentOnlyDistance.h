@@ -27,9 +27,9 @@
 #include "ReferenceArguments.h"
 
 namespace PLMD {
-
 class PDB;
 class Pbc;
+namespace reference {
 
 class ArgumentOnlyDistance : public ReferenceArguments {
 public:
@@ -39,5 +39,6 @@ public:
   double calculate( const std::vector<Value*>& vals, ReferenceValuePack& myder, const bool& squared ) const ;
 };
 
+}
 }
 #endif
