@@ -23,6 +23,8 @@
 
 namespace PLMD {
 
+namespace reference {
+
 PathReparameterization::PathReparameterization( const Pbc& ipbc, const std::vector<Value*>& iargs, std::vector<reference::ReferenceConfiguration*>& pp ): 
 mydpack( 1, pp[0]->getNumberOfReferenceArguments() + 3*pp[0]->getNumberOfReferencePositions() + 9 ),
 mypack( pp[0]->getNumberOfReferenceArguments(), pp[0]->getNumberOfReferencePositions(), mydpack ),
@@ -135,6 +137,8 @@ void PathReparameterization::reparameterize( const int& ifix1, const int& ifix2,
   if( ifix1>0 ) reparameterizePart( ifix1, 0, target, TOL );
   if( ifix2<(mypath.size()-1) ) reparameterizePart( ifix2, mypath.size()-1, target, TOL );
 //  calcCurrentPathSpacings( 0, mypath.size()-1 ); 
+}
+
 }
 
 }

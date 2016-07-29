@@ -30,6 +30,8 @@
 
 namespace PLMD {
 
+namespace reference {
+
 class PathReparameterization {
 private:
 /// Packs that we use to store the vectors connecting frames
@@ -59,5 +61,6 @@ public:
   void reparameterize( const int& istart, const int& iend, const double& TOL );
 };
 
+}
 }
 #endif

@@ -17,7 +17,7 @@ int main(){
   // Test path reparamterization with euclidean distances between frames
   std::string mtype="EUCLIDEAN";
   std::string inputfilename="epath.pdb"; 
-  PLMD::MultiReferenceBase mymap( mtype, false ); 
+  PLMD::reference::MultiReferenceBase mymap( mtype, false ); 
 
   FILE* fp=fopen(inputfilename.c_str(),"r");
   bool do_read=true; unsigned nfram=0;
@@ -40,11 +40,11 @@ int main(){
       fvals.push_back( new PLMD::Value() ); fvals[i]->setNotPeriodic();
   } 
   // Reparameterize the path
-  PLMD::PathReparameterization myreparam = PLMD::PathReparameterization( fpbc, fvals, mymap.getReferenceConfigurations() );
+  PLMD::reference::PathReparameterization myreparam = PLMD::reference::PathReparameterization( fpbc, fvals, mymap.getReferenceConfigurations() );
   myreparam.reparameterize( 0, nfram-1, 1.E-6 );
   // Needs something to print reparameterized path
   PLMD::OFile ofile; ofile.open("epath-out.pdb");
-  std::vector<PLMD::ReferenceConfiguration*>& oframes=mymap.getReferenceConfigurations();
+  std::vector<PLMD::reference::ReferenceConfiguration*>& oframes=mymap.getReferenceConfigurations();
   for(unsigned i=0;i<oframes.size();++i){ oframes[i]->print( ofile, "%8.4f", 1.0 ); }
   ofile.close();
 
@@ -54,7 +54,7 @@ int main(){
   fvals.resize(0);
 
   // Test path reparameterization with RMSD distances between frames
-  mtype="OPTIMAL"; PLMD::MultiReferenceBase mymap2( mtype, false );
+  mtype="OPTIMAL"; PLMD::reference::MultiReferenceBase mymap2( mtype, false );
   FILE* fp2=fopen("all.pdb","r");
   do_read=true; nfram=0;
   while (do_read){
@@ -70,12 +70,12 @@ int main(){
   mymap2.getAtomAndArgumentRequirements( atoms, args );
 
   // Reparaemterize the path
-  PLMD::PathReparameterization myreparam2 = PLMD::PathReparameterization( fpbc, fvals, mymap2.getReferenceConfigurations() );
+  PLMD::reference::PathReparameterization myreparam2 = PLMD::reference::PathReparameterization( fpbc, fvals, mymap2.getReferenceConfigurations() );
   myreparam2.reparameterize( 3, 6, 1.E-6 );
 
   // Needs something to print reparameterized path
   PLMD::OFile ofile2; ofile2.open("path-out.pdb");
-  std::vector<PLMD::ReferenceConfiguration*>& oframes2=mymap2.getReferenceConfigurations();
+  std::vector<PLMD::reference::ReferenceConfiguration*>& oframes2=mymap2.getReferenceConfigurations();
   for(unsigned i=0;i<oframes2.size();++i){ oframes2[i]->print( ofile2, "%8.4f", 1.0 ); }
   ofile2.close();
 
