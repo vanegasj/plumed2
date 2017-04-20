@@ -13,7 +13,7 @@ fi
 
 echo "installing gawk $version"
 
-wget http://git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-$version.tar.gz
+wget http://ftp.gnu.org/gnu/gawk/gawk-$version.tar.gz
 
 tar xzf gawk-$version.tar.gz
 
