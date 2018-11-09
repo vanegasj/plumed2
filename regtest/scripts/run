@@ -97,6 +97,22 @@ plumed="$plumed --no-mpi"
 
 fi
 
+if ((mpiprocs==0)) ; then
+  if [ -n "$PLUMED_SKIP_NOMPI" ] ;
+  then
+    echo "NOT_APPLICABLE (PLUMED_SKIP_NOMPI found)"
+    exit 0
+  fi
+fi
+
+if ((mpiprocs>0)) ; then
+  if [ -n "$PLUMED_SKIP_MPI" ] ;
+  then
+    echo "NOT_APPLICABLE (PLUMED_SKIP_MPI found)"
+    exit 0
+  fi
+fi
+
 if ((mpiprocs>0)) && [[ "$valgrind" != "env" ]]
 then
     if [ "$TRAVIS" = true ]; then
