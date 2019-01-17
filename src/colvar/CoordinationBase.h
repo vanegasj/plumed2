@@ -33,6 +33,7 @@ namespace colvar {
 class CoordinationBase : public Colvar {
   bool pbc;
   bool serial;
+  bool XY;
   std::unique_ptr<NeighborList> nl;
   bool invalidateList;
   bool firsttime;

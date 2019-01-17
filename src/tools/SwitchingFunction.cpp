@@ -258,6 +258,7 @@ void SwitchingFunction::set(const std::string & definition,std::string& errormsg
   else if(name=="GAUSSIAN") type=gaussian;
   else if(name=="CUBIC") type=cubic;
   else if(name=="TANH") type=tanh;
+  else if(name=="1-TANH") type=mtanh;
   else if(name=="COSINUS") type=cosinus;
   else if((name=="MATHEVAL" || name=="CUSTOM")) {
     type=leptontype;
@@ -333,6 +334,8 @@ std::string SwitchingFunction::description() const {
     ostr<<"cubic";
   } else if(type==tanh) {
     ostr<<"tanh";
+  } else if(type==mtanh) {
+    ostr<<"1-tanh";
   } else if(type==cosinus) {
     ostr<<"cosinus";
   } else if(type==leptontype) {
@@ -460,6 +463,10 @@ double SwitchingFunction::calculate(double distance,double&dfunc)const {
       result=tmp1*tmp1*tmp2;
       dfunc=2*tmp1*tmp2 + 2*tmp1*tmp1;
     } else if(type==tanh) {
+      double tmp1=std::tanh(rdist);
+      result = tmp1;
+      dfunc=1-tmp1*tmp1;
+    } else if(type==mtanh) {
       double tmp1=std::tanh(rdist);
       result = 1.0 - tmp1;
       dfunc=-(1-tmp1*tmp1);

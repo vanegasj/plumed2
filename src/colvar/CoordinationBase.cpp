@@ -36,6 +36,7 @@ void CoordinationBase::registerKeywords( Keywords& keys ) {
   keys.addFlag("SERIAL",false,"Perform the calculation in serial - for debug purpose");
   keys.addFlag("PAIR",false,"Pair only 1st element of the 1st group with 1st element in the second, etc");
   keys.addFlag("NLIST",false,"Use a neighbor list to speed up the calculation");
+  keys.addFlag("XY",false,"Only use XY components of distance");
   keys.add("optional","NL_CUTOFF","The cutoff for the neighbor list");
   keys.add("optional","NL_STRIDE","The frequency with which we are updating the atoms in the neighbor list");
   keys.add("atoms","GROUPA","First list of atoms");
@@ -46,11 +47,14 @@ CoordinationBase::CoordinationBase(const ActionOptions&ao):
   PLUMED_COLVAR_INIT(ao),
   pbc(true),
   serial(false),
+  XY(false),
   invalidateList(true),
   firsttime(true)
 {
 
   parseFlag("SERIAL",serial);
+
+  parseFlag("XY",XY);
 
   vector<AtomNumber> ga_lista,gb_lista;
   parseAtomList("GROUPA",ga_lista);
@@ -102,6 +106,7 @@ CoordinationBase::CoordinationBase(const ActionOptions&ao):
   if(pbc) log.printf("  using periodic boundary conditions\n");
   else    log.printf("  without periodic boundary conditions\n");
   if(dopair) log.printf("  with PAIR option\n");
+  if(XY) log.printf("  only using XY components of distance\n");
   if(doneigh) {
     log.printf("  using neighbor lists with\n");
     log.printf("  update every %d steps and cutoff %f\n",nl_st,nl_cut);
@@ -173,6 +178,8 @@ void CoordinationBase::calculate()
       } else {
         distance=delta(getPosition(i0),getPosition(i1));
       }
+
+      if(XY) distance[2] = 0.0;
 
       double dfunc=0.;
       ncoord += pairing(distance.modulo2(), dfunc,i0,i1);
