@@ -225,6 +225,7 @@ private:
   double maxFactor;
   UIestimator::UIestimator eabf_UI;
   Random rand;
+  unsigned seed;
 
 public:
   explicit DynamicReferenceRestraining(const ActionOptions &);
@@ -293,6 +294,8 @@ void DynamicReferenceRestraining::registerKeywords(Keywords &keys) {
     "the temperature of extended variables (default to system temperature)");
   keys.add("optional", "DRR_RFILE",
            "specifies the restart file (.drrstate file)");
+  keys.add("compulsory", "SEED", "0",
+           "specifies the seed to initialize the random number generator");
   keys.addFlag("NOBIAS", false, "DO NOT apply bias forces.");
   keys.addFlag("TEXTOUTPUT", false, "use text output for grad and count files "
                "instead of boost::serialization binary "
@@ -340,7 +343,7 @@ DynamicReferenceRestraining::DynamicReferenceRestraining(
     externalFictValue(getNumberOfArguments(), NULL),
     c1(getNumberOfArguments(), 0.0),
     c2(getNumberOfArguments(), 0.0), mass(getNumberOfArguments(), 0.0),
-    delim(getNumberOfArguments()), outputname(""), cptname(""),
+    delim(getNumberOfArguments()), outputname(""), cptname(""), seed(0),
     outputprefix(""), ndims(getNumberOfArguments()), dt(0.0), kbt(0.0),
     outputfreq(0.0), historyfreq(-1.0), isRestart(false),
     useCZARestimator(true), useUIestimator(false), textoutput(false),
@@ -385,6 +388,9 @@ DynamicReferenceRestraining::DynamicReferenceRestraining(
   parseVector("KAPPA", kappa);
   double temp = -1.0;
   parse("TEMP", temp);
+  parse("SEED", seed);
+  log << "Random number generator seed: " << seed << '\n';
+  rand.setSeed(-seed);
   parse("FULLSAMPLES", fullsamples);
   parse("MAXFACTOR", maxFactor);
   parse("OUTPUTFREQ", outputfreq);
