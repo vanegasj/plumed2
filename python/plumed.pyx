@@ -25,8 +25,15 @@
 #
 
 cimport cplumed  # This imports information from pxd file - including contents of this file here causes name clashes
-import numpy as np
-cimport numpy as np
+
+from cpython cimport array
+import array
+
+try:
+     import numpy as np
+     HAS_NUMPY=True
+except ImportError:
+     HAS_NUMPY=False
 
 cdef class Plumed:
      cdef cplumed.Plumed c_plumed
@@ -45,6 +52,28 @@ cdef class Plumed:
                  raise RuntimeError("Error loading PLUMED kernel at path " + kernel)
          cdef int pres = 8
          self.c_plumed.cmd( "setRealPrecision", <void*>&pres )
+     def finalize(self):
+         """ Explicitly finalize a Plumed object.
+
+             Can be used in cases where one wants to make sure the Plumed object is finalized
+             (so that all output files are flushed and all calculations are finalized) but there is
+             a dangling reference to that Plumed object. Notice that after this call the self object
+             will be invalid so that using cmd will raise an exception.
+
+             It is also called by __exit__ in order to allow the following usage:
+             ````
+             with plumed.Plumed() as p:
+                 p.cmd("init")
+                 # ETC
+
+             # p object will be finalized when exiting from this context
+             ````
+         """
+         self.c_plumed=cplumed.Plumed()
+     def __enter__(self):
+         return self
+     def __exit__(self, type, value, traceback):
+        self.finalize()
      def cmd_ndarray_real(self, ckey, val):
          cdef double [:] abuffer = val.ravel()
          self.c_plumed.cmd( ckey, <void*>&abuffer[0])
@@ -59,8 +88,7 @@ cdef class Plumed:
          cdef bytes py_bytes = key.encode()
          cdef char* ckey = py_bytes
          cdef char* cval 
-         cdef np.int_t[:] ibuffer
-         cdef np.float64_t[:] dbuffer
+         cdef array.array ar
          if val is None :
             self.c_plumed.cmd( ckey, NULL )
          elif isinstance(val, (int,long) ):
@@ -71,13 +99,22 @@ cdef class Plumed:
             if key=="getBias" :
                raise ValueError("when using cmd with getBias option value must be a size one ndarray")
             self.cmd_float(ckey, val) 
-         elif isinstance(val, np.ndarray) : 
+         elif HAS_NUMPY and isinstance(val, np.ndarray) : 
             if( val.dtype=="float64" ):
                self.cmd_ndarray_real(ckey, val)
             elif( val.dtype=="int64" ) : 
                self.cmd_ndarray_int(ckey, val)
             else :
                raise ValueError("ndarrys should be float64 or int64")
+         elif isinstance(val, array.array) : 
+            if( (val.typecode=="d" or val.typecode=="f") and val.itemsize==8): 
+               ar = val
+               self.c_plumed.cmd( ckey, <void*> ar.data.as_voidptr)
+            elif( (val.typecode=="i" or val.typecode=="I") ) :
+               ar = val
+               self.c_plumed.cmd( ckey, <void*> ar.data.as_voidptr)
+            else :
+               raise ValueError("ndarrays should be double (size=8) or int")
          elif isinstance(val, basestring ) :
               py_bytes = val.encode()
               cval = py_bytes 

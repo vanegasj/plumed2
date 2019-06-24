@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2018 The plumed team
+   Copyright (c) 2015-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -55,7 +55,7 @@ ReadAnalysisFrames::ReadAnalysisFrames( const ActionOptions& ao ):
   weights_calculated(false)
 {
   parse("CLEAR",clearstride);
-  if( clearstride!=0 ) log.printf("  clearing stored data every %d steps\n");
+  if( clearstride!=0 ) log.printf("  clearing stored data every %u steps\n",clearstride);
   // Get the names of the argumes
   argument_names.resize( getNumberOfArguments() );
   for(unsigned i=0; i<getNumberOfArguments(); ++i) argument_names[i]=getPntrToArgument(i)->getName();

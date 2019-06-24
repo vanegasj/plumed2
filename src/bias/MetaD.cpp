@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2018 The plumed team
+   Copyright (c) 2011-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -375,7 +375,7 @@ private:
     Gaussian(const vector<double> & center,const vector<double> & sigma,double height, bool multivariate ):
       center(center),sigma(sigma),height(height),multivariate(multivariate),invsigma(sigma) {
       // to avoid troubles from zero element in flexible hills
-      for(unsigned i=0; i<invsigma.size(); ++i) abs(invsigma[i])>1.e-20?invsigma[i]=1.0/invsigma[i]:0.;
+        for(unsigned i=0; i<invsigma.size(); ++i) if(abs(invsigma[i])>1.e-20) invsigma[i]=1.0/invsigma[i] ; else invsigma[i]=0.0;
     }
   };
   struct TemperingSpecs {
@@ -395,7 +395,7 @@ private:
   vector<Gaussian> hills_;
   OFile hillsOfile_;
   OFile gridfile_;
-  std::unique_ptr<Grid> BiasGrid_;
+  std::unique_ptr<GridBase> BiasGrid_;
   bool storeOldGrids_;
   int wgridstride_;
   bool grid_;
@@ -406,7 +406,7 @@ private:
   double dampfactor_;
   struct TemperingSpecs tt_specs_;
   std::string targetfilename_;
-  std::unique_ptr<Grid> TargetGrid_;
+  std::unique_ptr<GridBase> TargetGrid_;
   double kbt_;
   int stride_;
   bool welltemp_;
@@ -1020,7 +1020,7 @@ MetaD::MetaD(const ActionOptions& ao):
     log.printf("  calculation on the fly of the transition bias V*(t)\n");
     addComponent("transbias");
     componentIsNotPeriodic("transbias");
-    log.printf("  Number of transition wells %d\n", transitionwells_.size());
+    log<<"  Number of transition wells "<<transitionwells_.size()<<"\n";
     if (transitionwells_.size() == 0) error("Calculating the transition bias on the fly requires definition of at least one transition well");
     // Check that a grid is in use.
     if (!grid_) error(" transition barrier finding requires a grid for the bias");
@@ -1106,7 +1106,7 @@ MetaD::MetaD(const ActionOptions& ao):
       error("The GRID file you want to read: " + gridreadfilename_ + ", cannot be found!");
     }
     std::string funcl=getLabel() + ".bias";
-    BiasGrid_=Grid::create(funcl, getArguments(), gridfile, gmin, gmax, gbin, sparsegrid, spline, true);
+    BiasGrid_=GridBase::create(funcl, getArguments(), gridfile, gmin, gmax, gbin, sparsegrid, spline, true);
     if(BiasGrid_->getDimension()!=getNumberOfArguments()) error("mismatch between dimensionality of input grid and number of arguments");
     for(unsigned i=0; i<getNumberOfArguments(); ++i) {
       if( getPntrToArgument(i)->isPeriodic()!=BiasGrid_->getIsPeriodic()[i] ) error("periodicity mismatch between arguments and input bias");
@@ -1196,7 +1196,7 @@ MetaD::MetaD(const ActionOptions& ao):
   if(targetfilename_.length()>0) {
     IFile gridfile; gridfile.open(targetfilename_);
     std::string funcl=getLabel() + ".target";
-    TargetGrid_=Grid::create(funcl,getArguments(),gridfile,false,false,true);
+    TargetGrid_=GridBase::create(funcl,getArguments(),gridfile,false,false,true);
     if(TargetGrid_->getDimension()!=getNumberOfArguments()) error("mismatch between dimensionality of input grid and number of arguments");
     for(unsigned i=0; i<getNumberOfArguments(); ++i) {
       if( getPntrToArgument(i)->isPeriodic()!=TargetGrid_->getIsPeriodic()[i] ) error("periodicity mismatch between arguments and input bias");

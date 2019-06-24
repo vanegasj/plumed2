@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2018 The plumed team
+   Copyright (c) 2012-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -34,8 +34,7 @@ namespace multicolvar {
 //+PLUMEDOC MCOLVAR XDISTANCES
 /*
 Calculate the x components of the vectors connecting one or many pairs of atoms.
-You can then calculate functions of the distribution of
-values such as the minimum, the number less than a certain quantity and so on.
+You can then calculate functions of the distribution of values such as the minimum, the number less than a certain quantity and so on.
 
 \par Examples
 
@@ -81,8 +80,7 @@ PRINT ARG=d1.gt0.1
 //+PLUMEDOC MCOLVAR YDISTANCES
 /*
 Calculate the y components of the vectors connecting one or many pairs of atoms.
-You can then calculate functions of the distribution of
-values such as the minimum, the number less than a certain quantity and so on.
+You can then calculate functions of the distribution of values such as the minimum, the number less than a certain quantity and so on.
 
 \par Examples
 
@@ -129,8 +127,7 @@ PRINT ARG=d1.gt0.1
 //+PLUMEDOC MCOLVAR ZDISTANCES
 /*
 Calculate the z components of the vectors connecting one or many pairs of atoms.
-You can then calculate functions of the distribution of
-values such as the minimum, the number less than a certain quantity and so on.
+You can then calculate functions of the distribution of values such as the minimum, the number less than a certain quantity and so on.
 
 \par Examples
 

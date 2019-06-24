@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2018 The plumed team
+   Copyright (c) 2015-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -34,8 +34,8 @@ namespace multicolvar {
 //+PLUMEDOC MCOLVAR XYDISTANCES
 /*
 Calculate distance between a pair of atoms neglecting the z-component.
-You can then calculate functions of the distribution of
- values such as the minimum, the number less than a certain quantity and so on.
+
+You can then calculate functions of the distribution of values such as the minimum, the number less than a certain quantity and so on.
 
 \par Examples
 
@@ -55,6 +55,7 @@ PRINT ARG=d1.min
 //+PLUMEDOC MCOLVAR XZDISTANCES
 /*
 Calculate distance between a pair of atoms neglecting the y-component.
+
 You can then calculate functions of the distribution of
 values such as the minimum, the number less than a certain quantity and so on.
 
@@ -76,6 +77,7 @@ PRINT ARG=d1.min
 //+PLUMEDOC MCOLVAR YZDISTANCES
 /*
 Calculate distance between a pair of atoms neglecting the x-component.
+
 You can then calculate functions of the distribution of
 values such as the minimum, the number less than a certain quantity and so on.
 

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2018 The plumed team
+   Copyright (c) 2018,2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -33,6 +33,7 @@ namespace isdb {
 //+PLUMEDOC ISDB_BIAS CALIBER
 /*
 Add a time-dependent, harmonic restraint on one or more variables.
+
 This allows implementing a maximum caliber restraint on one or more experimental time series by replica-averaged restrained simulations.
 See \cite Capelli:2018jt .
 

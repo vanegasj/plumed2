@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2018 The plumed team
+   Copyright (c) 2011-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -457,7 +457,7 @@ void PlumedMain::cmd(const std::string & word,void*val) {
       /* ADDED WITH API==6 */
       case cmd_setNumOMPthreads:
         CHECK_NOTNULL(val,word);
-        OpenMP::setNumThreads(*static_cast<unsigned*>(val));
+        OpenMP::setNumThreads(*static_cast<int*>(val)>0?*static_cast<int*>(val):1);
         break;
       /* ADDED WITH API==6 */
       /* only used for testing */

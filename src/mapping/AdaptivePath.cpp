@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2016-2018 The plumed team
+   Copyright (c) 2016-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -230,7 +230,8 @@ void AdaptivePath::update() {
     myspacings.reparameterize( fixedn[0], fixedn[1], tolerance );
   }
   if( (getStep()>0) && (getStep()%wstride==0) ) {
-    pathfile.printf("# PATH AT STEP %d TIME %f \n", getStep(), getTime() );
+    pathfile<<"# PATH AT STEP "<<getStep();
+    pathfile.printf(" TIME %f \n",getTime());
     std::vector<std::unique_ptr<ReferenceConfiguration>>& myconfs=getAllReferenceConfigurations();
     std::vector<SetupMolInfo*> moldat=plumed.getActionSet().select<SetupMolInfo*>();
     if( moldat.size()>1 ) error("you should only have one MOLINFO action in your input file");

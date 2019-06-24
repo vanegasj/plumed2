@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2017,2018 The plumed team
+   Copyright (c) 2017-2019 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -65,7 +65,7 @@ automatically assigned to atoms using the ATOMISTIC flag reading a PDB file, a c
 automatically added, with water density that by default is 0.334 but that can be set otherwise using WATERDENS;
 automatically assigned to Martini pseudo atoms using the MARTINI flag.
 The calculated intensities can be scaled using the SCALEINT keywords. This is applied by rescaling the structure factors.
-Experimental reference intensities can be added using the ADDEXP and EXPINT flag and keywords.
+Experimental reference intensities can be added using the EXPINT keywords.
 By default SAXS is calculated using Debye on CPU, by adding the GPU flag it is possible to solve the equation on a GPU
 if the ARRAYFIRE libraries are installed and correctly linked (). Alternatively we an implementation based on Bessel functions,
 BESSEL flag. This is very fast for small q values because a short expansion is enough.
@@ -83,7 +83,6 @@ MOLINFO STRUCTURE=template.pdb
 SAXS ...
 LABEL=saxs
 ATOMS=1-355
-ADDEXP
 SCALEINT=3920000
 MARTINI
 QVALUE1=0.02 EXPINT1=1.0902
@@ -114,25 +113,23 @@ class SAXS :
   public MetainferenceBase
 {
 private:
-  bool                     pbc;
-  bool                     serial;
-  bool                     bessel;
-  bool                     force_bessel;
-  bool                     gpu;
-  int                      deviceid;
-  vector<double>           q_list;
-  vector<double>           FF_rank;
-  vector<vector<double> >  FF_value;
-#ifdef  __PLUMED_HAS_ARRAYFIRE
-  af::array                AFF_value;
-#endif
-  vector<double>           avals;
-  vector<double>           bvals;
+  bool                       pbc;
+  bool                       serial;
+  bool                       bessel;
+  bool                       force_bessel;
+  bool                       gpu;
+  int                        deviceid;
+  vector<double>             q_list;
+  vector<double>             FF_rank;
+  vector<vector<double> >    FF_value;
+  vector<vector<float> >     FFf_value;
+  vector<double>             avals;
+  vector<double>             bvals;
 
   void calculate_gpu(vector<Vector> &deriv);
   void calculate_cpu(vector<Vector> &deriv);
   void getMartiniSFparam(const vector<AtomNumber> &atoms, vector<vector<long double> > &parameter);
-  void calculateASF(const vector<AtomNumber> &atoms, vector<vector<long double> > &FF_tmp, const double rho);
+  double calculateASF(const vector<AtomNumber> &atoms, vector<vector<long double> > &FF_tmp, const double rho);
   void bessel_calculate(vector<Vector> &deriv, vector<double> &sum, vector<Vector2d> &qRnm, const vector<double> &r_polar,
                         const vector<unsigned> &trunc, const int algorithm, const unsigned p2);
   void setup_midl(vector<double> &r_polar, vector<Vector2d> &qRnm, int &algorithm, unsigned &p2, vector<unsigned> &trunc);
@@ -166,11 +163,10 @@ void SAXS::registerKeywords(Keywords& keys) {
   keys.add("numbered","QVALUE","Selected scattering lengths in Angstrom are given as QVALUE1, QVALUE2, ... .");
   keys.add("numbered","PARAMETERS","Used parameter Keywords like PARAMETERS1, PARAMETERS2. These are used to calculate the structure factor for the \\f$i\\f$th atom/bead.");
   keys.add("compulsory","WATERDENS","0.334","Density of the water to be used for the correction of atomistic structure factors.");
-  keys.addFlag("ADDEXP",false,"Set to TRUE if you want to have fixed components with the experimental values.");
   keys.add("numbered","EXPINT","Add an experimental value for each q value.");
   keys.add("compulsory","SCALEINT","1.0","SCALING value of the calculated data. Useful to simplify the comparison.");
   keys.addOutputComponent("q","default","the # SAXS of q");
-  keys.addOutputComponent("exp","ADDEXP","the # experimental intensity");
+  keys.addOutputComponent("exp","EXPINT","the # experimental intensity");
 }
 
 SAXS::SAXS(const ActionOptions&ao):
@@ -215,10 +211,6 @@ SAXS::SAXS(const ActionOptions&ao):
 
   if(bessel&&gpu) error("You CANNOT use BESSEL on GPU!\n");
 
-  double scexp = 0;
-  parse("SCALEINT",scexp);
-  if(scexp==0) scexp=1.0;
-
   unsigned ntarget=0;
   for(unsigned i=0;; ++i) {
     double t_list;
@@ -239,6 +231,7 @@ SAXS::SAXS(const ActionOptions&ao):
   double rho = 0.334;
   parse("WATERDENS", rho);
 
+  double Iq0=0;
   vector<vector<long double> >  FF_tmp;
   FF_tmp.resize(numq,vector<long double>(size));
   if(!atomistic&&!martini) {
@@ -258,6 +251,7 @@ SAXS::SAXS(const ActionOptions&ao):
         }
       }
     }
+    for(unsigned i=0; i<size; ++i) Iq0+=parameter[i][0];
   } else if(martini) {
     //read in parameter vector
     vector<vector<long double> > parameter;
@@ -270,37 +264,11 @@ SAXS::SAXS(const ActionOptions&ao):
         }
       }
     }
+    for(unsigned i=0; i<size; ++i) Iq0+=parameter[i][0];
   } else if(atomistic) {
-    calculateASF(atoms, FF_tmp, rho);
+    Iq0=calculateASF(atoms, FF_tmp, rho);
   }
-
-  // Calculate Rank of FF_matrix
-  if(!gpu) {
-    FF_rank.resize(numq);
-    FF_value.resize(numq,vector<double>(size));
-    for(unsigned k=0; k<numq; ++k) {
-      for(unsigned i=0; i<size; i++) {
-        FF_value[k][i] = static_cast<double>(FF_tmp[k][i])/sqrt(scexp);
-        FF_rank[k]+=FF_value[k][i]*FF_value[k][i];
-      }
-    }
-  } else {
-    vector<float> FF_new;
-    FF_new.resize(numq*size);
-    for(unsigned k=0; k<numq; ++k) {
-      for(unsigned i=0; i<size; i++) {
-        FF_new[k+i*numq] = static_cast<float>(FF_tmp[k][i]/sqrt(scexp));
-      }
-    }
-#ifdef __PLUMED_HAS_ARRAYFIRE
-    af::array allFFa = af::array(numq, size, &FF_new.front());
-    AFF_value = allFFa;
-#endif
-  }
-
-  bool exp=false;
-  parseFlag("ADDEXP",exp);
-  if(getDoScore()) exp=true;
+  double scale_int = Iq0*Iq0;
 
   vector<double> expint;
   expint.resize( numq );
@@ -309,13 +277,45 @@ SAXS::SAXS(const ActionOptions&ao):
     if( !parseNumbered( "EXPINT", i+1, expint[i] ) ) break;
     ntarget++;
   }
-  if( ntarget!=numq && exp==true) error("found wrong number of EXPINT values");
+  bool exp=false;
+  if(ntarget!=numq && ntarget!=0) error("found wrong number of EXPINT values");
+  if(ntarget==numq) exp=true;
+  if(getDoScore()&&!exp) error("with DOSCORE you need to set the EXPINT values");
+
+  double tmp_scale_int=1.;
+  parse("SCALEINT",tmp_scale_int);
+
 
   if(pbc)      log.printf("  using periodic boundary conditions\n");
   else         log.printf("  without periodic boundary conditions\n");
   for(unsigned i=0; i<numq; i++) {
     if(q_list[i]==0.) error("it is not possible to set q=0\n");
+    if(i>0&&q_list[i]<q_list[i-1]) error("QVALUE must be in ascending order");
     log.printf("  my q: %lf \n",q_list[i]);
+  }
+
+  // Calculate Rank of FF_matrix
+  if(tmp_scale_int!=1) scale_int /= tmp_scale_int;
+  else {
+    if(exp) scale_int /= expint[0];
+  }
+
+  if(!gpu) {
+    FF_rank.resize(numq);
+    FF_value.resize(numq,vector<double>(size));
+    for(unsigned k=0; k<numq; ++k) {
+      for(unsigned i=0; i<size; i++) {
+        FF_value[k][i] = static_cast<double>(FF_tmp[k][i])/sqrt(scale_int);
+        FF_rank[k]+=FF_value[k][i]*FF_value[k][i];
+      }
+    }
+  } else {
+    FFf_value.resize(numq,vector<float>(size));
+    for(unsigned k=0; k<numq; ++k) {
+      for(unsigned i=0; i<size; i++) {
+        FFf_value[k][i] = static_cast<float>(FF_tmp[k][i])/sqrt(scale_int);
+      }
+    }
   }
 
   if(!getDoScore()) {
@@ -356,7 +356,7 @@ SAXS::SAXS(const ActionOptions&ao):
   log<<"  Bibliography ";
   if(martini) {
     log<<plumed.cite("Niebling, Björling, Westenhoff, J Appl Crystallogr 47, 1190–1198 (2014).");
-    log<<plumed.cite("Paissoni, Jussupow, Camilloni, bioRxiv 498147.");
+    log<<plumed.cite("Paissoni, Jussupow, Camilloni, J Appl Crystallogr 52, 394-402 (2019).");
   }
   if(atomistic) {
     log<<plumed.cite("Fraser, MacRae, Suzuki, J. Appl. Crystallogr., 11, 693–694 (1978).");
@@ -366,7 +366,7 @@ SAXS::SAXS(const ActionOptions&ao):
   log<< plumed.cite("Bonomi, Camilloni, Bioinformatics, 33, 3999 (2017)");
   log<<"\n";
 
-  requestAtoms(atoms);
+  requestAtoms(atoms, false);
   if(getDoScore()) {
     setParameters(expint);
     Initialise(numq);
@@ -429,8 +429,10 @@ void SAXS::calculate_gpu(vector<Vector> &deriv)
 
     for (unsigned k=0; k<numq; k++) {
       // calculate FF matrix
+      // size,1,1,1
+      af::array AFF_value(size, &FFf_value[k].front());
       // size,size,1,1
-      af::array FFdist_mod = af::tile(af::moddims(AFF_value(k, af::span), size, 1), 1, size)*af::tile(AFF_value(k, af::span), size, 1);
+      af::array FFdist_mod = af::tile(AFF_value(af::span), 1, size)*af::transpose(af::tile(AFF_value(af::span), 1, size));
 
       // get q
       const float qvalue = static_cast<float>(q_list[k]);
@@ -754,7 +756,8 @@ void SAXS::setup_midl(vector<double> &r_polar, vector<Vector2d> &qRnm, int &algo
   if(algorithm==-1) log.printf("BESSEL is suboptimal for this system and is being disabled, unless FORCE_BESSEL is used\n");
   if(force_bessel) algorithm=numq-1;
 
-  qRnm.resize(p2*size);
+  unsigned qRnm_size = p2*size;
+  qRnm.resize(qRnm_size);
   //as the legndre polynomials and the exponential term in the basis set expansion are not function of the scattering wavenumber, they can be precomputed
   for(unsigned i=rank; i<size; i+=stride) {
     for(int n=0; n<truncation; n++) {
@@ -1950,7 +1953,7 @@ void SAXS::getMartiniSFparam(const vector<AtomNumber> &atoms, vector<vector<long
   }
 }
 
-void SAXS::calculateASF(const vector<AtomNumber> &atoms, vector<vector<long double> > &FF_tmp, const double rho)
+double SAXS::calculateASF(const vector<AtomNumber> &atoms, vector<vector<long double> > &FF_tmp, const double rho)
 {
   enum { H, C, N, O, P, S, NTT };
   map<string, unsigned> AA_map;
@@ -2009,6 +2012,7 @@ void SAXS::calculateASF(const vector<AtomNumber> &atoms, vector<vector<long doub
 
   vector<SetupMolInfo*> moldat=plumed.getActionSet().select<SetupMolInfo*>();
 
+  double Iq0=0.;
   if( moldat.size()==1 ) {
     log<<"  MOLINFO DATA found, using proper atom names\n";
     for(unsigned i=0; i<atoms.size(); ++i) {
@@ -2039,6 +2043,8 @@ void SAXS::calculateASF(const vector<AtomNumber> &atoms, vector<vector<long doub
           // subtract solvation: rho * v_i * EXP( (- v_i^(2/3) / (4pi)) * q^2  ) // since  D in Fraser 1978 is 2*s
           FF_tmp[k][i] -= rho*param_v[index]*exp(-volr*q*q);
         }
+        for(unsigned j=0; j<4; j++) Iq0 += param_a[index][j];
+        Iq0 = Iq0 -rho*param_v[index] + param_c[index];
       } else {
         error("Wrong atom type "+type_s+" from atom name "+name+"\n");
       }
@@ -2046,6 +2052,8 @@ void SAXS::calculateASF(const vector<AtomNumber> &atoms, vector<vector<long doub
   } else {
     error("MOLINFO DATA not found\n");
   }
+
+  return Iq0;
 }
 
 }
