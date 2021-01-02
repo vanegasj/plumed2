@@ -636,6 +636,7 @@ dot
 doxygen
 make_doc
 readelf
+use_debug_glibcxx
 OPENMP_CXXFLAGS
 EGREP
 GREP
@@ -1425,7 +1426,7 @@ Optional Features:
                           yes
   --enable-zlib           enable search for zlib, default: yes
   --enable-readdir-r      enable search for readdir_r (threadsafe), default:
-                          yes
+                          no
   --enable-cregex         enable search for C regular expression, default: yes
   --enable-dlopen         enable search for dlopen, default: yes
   --enable-rtld_default   enable search for RTLD_DEFAULT macro, default: yes
@@ -1439,12 +1440,11 @@ Optional Features:
   --enable-boost_graph    enable search for boost graph, default: no
   --enable-boost_serialization
                           enable search for boost serialization, default: no
-  --enable-fftw           enable search for fftw, default: no
+  --enable-fftw           enable search for fftw, default: yes
   --enable-python         enable search for python, default: yes
-  --enable-af_ocl         enable arrayfire_opencl, default: search for
-                          arrayfire
-  --enable-af_cuda        enable arrayfire_cuda, default: search for arrayfire
-  --enable-af_cpu         enable arrayfire_cpu, default: search for arrayfire
+  --enable-af_ocl         enable search for arrayfire_ocl, default: no
+  --enable-af_cuda        enable search for arrayfire_cuda, default: no
+  --enable-af_cpu         enable search for arrayfire_cpu, default: no
   --disable-openmp        do not use OpenMP
 
 Some influential environment variables:
@@ -2975,7 +2975,7 @@ if test "${enable_readdir_r+set}" = set; then :
              (*)   as_fn_error $? "wrong argument to --enable-readdir-r" "$LINENO" 5 ;;
   esac
 else
-  case "yes" in
+  case "no" in
              (yes) readdir_r=true ;;
              (no)  readdir_r=false ;;
   esac
@@ -3191,7 +3191,7 @@ if test "${enable_fftw+set}" = set; then :
              (*)   as_fn_error $? "wrong argument to --enable-fftw" "$LINENO" 5 ;;
   esac
 else
-  case "no" in
+  case "yes" in
              (yes) fftw=true ;;
              (no)  fftw=false ;;
   esac
@@ -3227,7 +3227,7 @@ if test "${enable_af_ocl+set}" = set; then :
              (*)   as_fn_error $? "wrong argument to --enable-af_ocl" "$LINENO" 5 ;;
   esac
 else
-  case "search for arrayfire" in
+  case "no" in
              (yes) af_ocl=true ;;
              (no)  af_ocl=false ;;
   esac
@@ -3245,7 +3245,7 @@ if test "${enable_af_cuda+set}" = set; then :
              (*)   as_fn_error $? "wrong argument to --enable-af_cuda" "$LINENO" 5 ;;
   esac
 else
-  case "search for arrayfire" in
+  case "no" in
              (yes) af_cuda=true ;;
              (no)  af_cuda=false ;;
   esac
@@ -3263,7 +3263,7 @@ if test "${enable_af_cpu+set}" = set; then :
              (*)   as_fn_error $? "wrong argument to --enable-af_cpu" "$LINENO" 5 ;;
   esac
 else
-  case "search for arrayfire" in
+  case "no" in
              (yes) af_cpu=true ;;
              (no)  af_cpu=false ;;
   esac
@@ -8996,8 +8996,8 @@ done
   then
     { $as_echo "$as_me:${as_lineno-$LINENO}: Python executable is $PYTHON_BIN" >&5
 $as_echo "$as_me: Python executable is $PYTHON_BIN" >&6;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking support for required python modules (setuptools, cython, subprocess, os, shutil)" >&5
-$as_echo_n "checking support for required python modules (setuptools, cython, subprocess, os, shutil)... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking support for required python modules (python3, setuptools, cython, subprocess, os, shutil)" >&5
+$as_echo_n "checking support for required python modules (python3, setuptools, cython, subprocess, os, shutil)... " >&6; }
 testimport="
 from setuptools import setup
 from setuptools import Extension
@@ -9007,6 +9007,8 @@ import os.path
 import sys
 from shutil import copyfile
 from Cython.Build import cythonize
+if sys.version_info < (3,):
+    raise ImportError('PLUMED 2.6 only supports Python 3')
 "
     if echo "$testimport" | "$PYTHON_BIN" 1>/dev/null 2>/dev/null;  then
        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -9449,12 +9451,16 @@ $as_echo "$as_me: Release mode, adding -DNDEBUG" >&6;}
 
 fi
 
+
 # in debug-glibcxx mode, add -D_GLIBCXX_DEBUG
+# also take note that we are using this to relax `make nmcheck`
+use_debug_glibcxx=no
 if test "$debug_glibcxx" == true ; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: Check boundaries, adding -D_GLIBCXX_DEBUG" >&5
 $as_echo "$as_me: Check boundaries, adding -D_GLIBCXX_DEBUG" >&6;}
   $as_echo "#define _GLIBCXX_DEBUG 1" >>confdefs.h
 
+  use_debug_glibcxx=yes
 fi
 
 # this is necessary in many MPI implementations

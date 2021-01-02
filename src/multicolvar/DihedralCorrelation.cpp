@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2013-2019 The plumed team
+   Copyright (c) 2013-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -26,8 +26,6 @@
 
 #include <string>
 #include <cmath>
-
-using namespace std;
 
 namespace PLMD {
 namespace multicolvar {
@@ -66,12 +64,13 @@ can avoid this by using the \ref MOLINFO command.  PLUMED uses the pdb file that
 about the topology of the protein molecule.  This means that you can specify torsion angles using the following syntax:
 
 \plumedfile
+#SETTINGS MOLFILE=regtest/basic/rt32/helix.pdb
 MOLINFO MOLTYPE=protein STRUCTURE=myprotein.pdb
-DIHCOR ...
+dih: DIHCOR ...
 ATOMS1=@phi-3,@psi-3
 ATOMS2=@psi-3,@phi-4
-ATOMS4=@phi-4,@psi-4
-... DIHCOR
+ATOMS3=@phi-4,@psi-4
+...
 PRINT ARG=dih FILE=colvar STRIDE=10
 \endplumedfile
 
@@ -86,8 +85,8 @@ private:
 public:
   static void registerKeywords( Keywords& keys );
   explicit DihedralCorrelation(const ActionOptions&);
-  virtual double compute( const unsigned& tindex, AtomValuePack& myatoms ) const ;
-  bool isPeriodic() { return false; }
+  double compute( const unsigned& tindex, AtomValuePack& myatoms ) const override;
+  bool isPeriodic() override { return false; }
 };
 
 PLUMED_REGISTER_ACTION(DihedralCorrelation,"DIHCOR")
@@ -145,9 +144,9 @@ double DihedralCorrelation::compute( const unsigned& tindex, AtomValuePack& myat
 
   // Calculate value
   const double diff = phi2 - phi1;
-  const double value = 0.5*(1.+cos(diff));
+  const double value = 0.5*(1.+std::cos(diff));
   // Derivatives wrt phi1
-  const double dval = 0.5*sin(diff);
+  const double dval = 0.5*std::sin(diff);
   dd10 *= dval;
   dd11 *= dval;
   dd12 *= dval;

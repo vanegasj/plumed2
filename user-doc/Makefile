@@ -3,7 +3,7 @@ ifneq ($(MAKECMDGOALS),clean)
   -include ../Makefile.conf
 endif
 
-.PHONY: all clean
+.PHONY: all clean spelling
 
 plumed_compiled := $(wildcard ../src/lib/plumed)
 
@@ -17,13 +17,17 @@ else
 all:
 ifeq ($(make_doc),yes)
 	make_pdfdoc=$(make_pdfdoc) ./extract
-	# temporarily removed for travis to build:
-	#./go-spelling
 	make_pdfdoc=$(make_pdfdoc) ./go-doxygen
 	cp *png html/
 	./report_errors
 endif
 endif
 
+spelling:
+	./go-spelling
+
+showerrors:
+	./report_errors
+
 clean:
-	rm -fr html latex automatic *~ *PP.txt *PP.md errors manual.pdf regtests
+	rm -fr example-check html latex automatic *~ *PP.txt *PP.md errors manual.pdf regtests

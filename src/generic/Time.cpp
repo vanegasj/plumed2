@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -24,8 +24,6 @@
 #include <string>
 #include <cmath>
 
-using namespace std;
-
 namespace PLMD {
 namespace generic {
 
@@ -48,9 +46,9 @@ public:
   static void registerKeywords( Keywords& keys );
   explicit Time(const ActionOptions&);
 // active methods:
-  virtual void calculate();
-  virtual void apply() {}
-  unsigned getNumberOfDerivatives() { return 0; }
+  void calculate() override;
+  void apply() override {}
+  unsigned getNumberOfDerivatives() override { return 0; }
 };
 
 PLUMED_REGISTER_ACTION(Time,"TIME")

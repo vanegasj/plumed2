@@ -20,7 +20,6 @@ along with plumed.  If not, see <http://www.gnu.org/licenses/>.
 #include "core/ActionWithVirtualAtom.h"
 #include "tools/NeighborList.h"
 #include "tools/SwitchingFunction.h"
-//#include "tools/Tools.h"
 #include "tools/PDB.h"
 #include "tools/Pbc.h"
 #include "tools/Stopwatch.h"
@@ -187,14 +186,12 @@ class PIV      : public Colvar
 private:
   bool pbc, serial, timer;
   ForwardDecl<Stopwatch> stopwatch_fwd;
-  /// The stopwatch that times the different parts of the calculation
   Stopwatch& stopwatch=*stopwatch_fwd;
   int updatePIV;
-  unsigned Nprec,Natm,Nlist,NLsize;
-  // Fvol: volume scaling factor for distances
+  size_t Nprec;
+  unsigned Natm,Nlist,NLsize;
   double Fvol,Vol0,m_PIVdistance;
   std::string ref_file;
-  // std:: vector<string> atype;
   NeighborList *nlall;
   std::vector<SwitchingFunction> sfs;
   std::vector<std:: vector<double> > rPIV;
@@ -204,15 +201,14 @@ private:
   std::vector<bool> dosort;
   std::vector<Vector> compos;
   std::vector<string> sw;
-  //std::vector<std:: vector<unsigned> > com2atoms;
   std::vector<NeighborList *> nl;
   std::vector<NeighborList *> nlcom;
   std::vector<Vector> m_deriv;
   Tensor m_virial;
-  bool Svol,Sfac,cross,direct,doneigh,test,CompDer,com;
+  bool Svol,cross,direct,doneigh,test,CompDer,com;
 public:
   static void registerKeywords( Keywords& keys );
-  PIV(const ActionOptions&);
+  explicit PIV(const ActionOptions&);
   ~PIV();
   // active methods:
   virtual void calculate();
@@ -253,36 +249,34 @@ void PIV::registerKeywords( Keywords& keys )
 PIV::PIV(const ActionOptions&ao):
   PLUMED_COLVAR_INIT(ao),
   pbc(true),
-  timer(false),
   serial(false),
+  timer(false),
   updatePIV(1),
-  Svol(false),
-  Sfac(false),
-  cross(true),
-  direct(true),
-  doneigh(false),
-  CompDer(false),
-  com(false),
-  test(false),
   Nprec(1000),
   Natm(1),
-  NLsize(1),
   Nlist(1),
+  NLsize(1),
   Fvol(1.),
   Vol0(0.),
   m_PIVdistance(0.),
-  m_deriv(std:: vector<Vector>(1)),
-  nl(std:: vector<NeighborList *>(Nlist)),
   rPIV(std:: vector<std:: vector<double> >(Nlist)),
   scaling(std:: vector<double>(Nlist)),
   r00(std:: vector<double>(Nlist)),
-  sw(std:: vector<string>(Nlist)),
   nl_skin(std:: vector<double>(Nlist)),
   fmass(std:: vector<double>(Nlist)),
   dosort(std:: vector<bool>(Nlist)),
+  compos(std:: vector<Vector>(NLsize)),
+  sw(std:: vector<string>(Nlist)),
+  nl(std:: vector<NeighborList *>(Nlist)),
   nlcom(std:: vector<NeighborList *>(NLsize)),
-  compos(std:: vector<Vector>(NLsize))
-//com2atoms(std:: vector<std:: vector<unsigned> >(Nlist))
+  m_deriv(std:: vector<Vector>(1)),
+  Svol(false),
+  cross(true),
+  direct(true),
+  doneigh(false),
+  test(false),
+  CompDer(false),
+  com(false)
 {
   log << "Starting PIV Constructor\n";
 
@@ -306,7 +300,6 @@ PIV::PIV(const ActionOptions&ao):
     log << "Serial PIV construction\n";
   } else     {
     log << "Parallel PIV construction\n";
-    unsigned rank=comm.Get_rank();
   }
 
   // Derivatives
@@ -382,9 +375,8 @@ PIV::PIV(const ActionOptions&ao):
   NLsize=mypdb.getAtomNumbers().size();
   // In the following P stands for Point (either an Atom or a COM)
   unsigned resnum=0;
-  unsigned Pnum=0;
   // Presind (array size: number of residues) contains the contains the residue number
-  //   this is because the residue numbers may not alwyas be ordered from 1 to resnum
+  //   this is because the residue numbers may not always be ordered from 1 to resnum
   std:: vector<unsigned> Presind;
   // Build Presind
   for (unsigned i=0; i<mypdb.getAtomNumbers().size(); i++) {
@@ -521,19 +513,19 @@ PIV::PIV(const ActionOptions&ao):
     }
     log << "Creating Neighbor Lists \n";
     // WARNING: is nl_cut meaningful here?
-    nlall= new NeighborList(listall,pbc,getPbc(),nl_cut[0],nl_st[0]);
+    nlall= new NeighborList(listall,true,pbc,getPbc(),comm,nl_cut[0],nl_st[0]);
     if(com) {
       //Build lists of Atoms for every COM
       for (unsigned i=0; i<compos.size(); i++) {
         // WARNING: is nl_cut meaningful here?
-        nlcom[i]= new NeighborList(comatm[i],pbc,getPbc(),nl_cut[0],nl_st[0]);
+        nlcom[i]= new NeighborList(comatm[i],true,pbc,getPbc(),comm,nl_cut[0],nl_st[0]);
       }
     }
     unsigned ncnt=0;
     // Direct blocks AA, BB, CC, ...
     if(direct) {
       for (unsigned j=0; j<Natm; j++) {
-        nl[ncnt]= new NeighborList(Plist[j],pbc,getPbc(),nl_cut[j],nl_st[j]);
+        nl[ncnt]= new NeighborList(Plist[j],true,pbc,getPbc(),comm,nl_cut[j],nl_st[j]);
         ncnt+=1;
       }
     }
@@ -541,16 +533,16 @@ PIV::PIV(const ActionOptions&ao):
     if(cross) {
       for (unsigned j=0; j<Natm; j++) {
         for (unsigned i=j+1; i<Natm; i++) {
-          nl[ncnt]= new NeighborList(Plist[i],Plist[j],false,pbc,getPbc(),nl_cut[ncnt],nl_st[ncnt]);
+          nl[ncnt]= new NeighborList(Plist[i],Plist[j],true,false,pbc,getPbc(),comm,nl_cut[ncnt],nl_st[ncnt]);
           ncnt+=1;
         }
       }
     }
   } else {
     log << "WARNING: Neighbor List not activated this has not been tested!!  \n";
-    nlall= new NeighborList(listall,pbc,getPbc());
+    nlall= new NeighborList(listall,true,pbc,getPbc(),comm);
     for (unsigned j=0; j<Nlist; j++) {
-      nl[j]= new NeighborList(Plist[j],Plist[j],true,pbc,getPbc());
+      nl[j]= new NeighborList(Plist[j],Plist[j],true,true,pbc,getPbc(),comm);
     }
   }
   // Output Nlist
@@ -560,8 +552,6 @@ PIV::PIV(const ActionOptions&ao):
   }
   // Calculate COM masses once and for all from lists
   if(com) {
-    unsigned count=0;
-    //log << "Computing COM masses  \n";
     for(unsigned j=0; j<compos.size(); j++) {
       double commass=0.;
       for(unsigned i=0; i<nlcom[j]->getFullAtomList().size(); i++) {
@@ -627,7 +617,7 @@ PIV::PIV(const ActionOptions&ao):
         double r0;
         vector<string> data=Tools::getWords(sw[j]);
         data.erase(data.begin());
-        bool tmp=Tools::parse(data,"R_0",r0);
+        Tools::parse(data,"R_0",r0);
         std::string old_r0; Tools::convert(r0,old_r0);
         r0*=Fvol;
         std::string new_r0; Tools::convert(r0,new_r0);
@@ -732,7 +722,7 @@ PIV::~PIV()
 void PIV::calculate()
 {
 
-  // Local varaibles
+  // Local variables
   // The following are probably needed as static arrays
   static int prev_stp=-1;
   static int init_stp=1;
@@ -742,7 +732,7 @@ void PIV::calculate()
   static std:: vector<std:: vector<int> > Atom1(Nlist);
   std:: vector<std:: vector<int> > A0(Nprec);
   std:: vector<std:: vector<int> > A1(Nprec);
-  unsigned stride=1;
+  size_t stride=1;
   unsigned rank=0;
 
   if(!serial) {
@@ -773,7 +763,7 @@ void PIV::calculate()
         double r0;
         vector<string> data=Tools::getWords(sw[j]);
         data.erase(data.begin());
-        bool tmp=Tools::parse(data,"R_0",r0);
+        Tools::parse(data,"R_0",r0);
         std::string old_r0; Tools::convert(r0,old_r0);
         r0*=Fvol;
         std::string new_r0; Tools::convert(r0,new_r0);
@@ -932,7 +922,7 @@ void PIV::calculate()
           std:: vector<int> Vpos(stride,0);
           // Vectors collecting occupancies: OrdVec one rank, OrdVecAll all ranks
           std:: vector<int> OrdVecAll(stride*Nprec);
-          // Big vectors contining all Atom indexes for every occupancy (Atom0O(Nprec,n) and Atom1O(Nprec,n) matrices in one vector)
+          // Big vectors containing all Atom indexes for every occupancy (Atom0O(Nprec,n) and Atom1O(Nprec,n) matrices in one vector)
           std:: vector<int> Atom0F;
           std:: vector<int> Atom1F;
           // Vector used to reconstruct arrays
@@ -974,7 +964,7 @@ void PIV::calculate()
           // build big vectors for atom pairs on all ranks for all ranks
           std:: vector<int> Atom0FAll(Fdim);
           std:: vector<int> Atom1FAll(Fdim);
-          // TO BE IMPROVED: Allgathers may be substituded by gathers by proc 0
+          // TO BE IMPROVED: Allgathers may be substituted by gathers by proc 0
           //   Moreover vectors are gathered head-to-tail and assembled later-on in a serial step.
           // Gather the full Ordering Vector (occupancies). This is what we need to build the PIV
           comm.Allgather(&OrdVec[0],Nprec,&OrdVecAll[0],Nprec);
@@ -983,7 +973,7 @@ void PIV::calculate()
           comm.Allgatherv(&Atom1F[0],Atom1F.size(),&Atom1FAll[0],&Vdim[0],&Vpos[0]);
 
           // Reconstruct the full vectors from collections of Allgathered parts (this is a serial step)
-          // This is the tricky serial step, to assemble toghether PIV and atom-pair info from head-tail big vectors
+          // This is the tricky serial step, to assemble together PIV and atom-pair info from head-tail big vectors
           // Loop before on l and then on i would be better but the allgather should be modified
           // Loop on blocks
           //for(unsigned m=0;m<Nlist;m++) {

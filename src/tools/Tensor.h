@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -537,7 +537,7 @@ void diagMatSym(const TensorGeneric<n,n>&mat,VectorGeneric<m>&evals,TensorGeneri
   std::array<int,2*m> isup;
   int nn=n;              // dimension of matrix
   double vl=0.0, vu=1.0; // ranges - not used
-  int one=1,mm=m;        // minimun and maximum index
+  int one=1,mm=m;        // minimum and maximum index
   double abstol=0.0;     // tolerance
   int mout=0;            // number of eigenvalues found (same as mm)
   int info=0;            // result
@@ -545,7 +545,7 @@ void diagMatSym(const TensorGeneric<n,n>&mat,VectorGeneric<m>&evals,TensorGeneri
   int lwork=work.size();
   TensorGenericAux::local_dsyevr("V", (n==m?"A":"I"), "U", &nn, const_cast<double*>(&mat[0][0]), &nn, &vl, &vu, &one, &mm,
                                  &abstol, &mout, &evals[0], &evec[0][0], &nn,
-                                 &isup[0], &work[0], &lwork, &iwork[0], &liwork, &info);
+                                 isup.data(), work.data(), &lwork, iwork.data(), &liwork, &info);
   if(info!=0) plumed_error()<<"Error diagonalizing matrix\n"
                               <<"Matrix:\n"<<mat<<"\n"
                               <<"Info: "<<info<<"\n";

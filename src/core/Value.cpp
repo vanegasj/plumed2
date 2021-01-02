@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -37,6 +37,22 @@ Value::Value():
   inputForce(0.0),
   hasForce(false),
   hasDeriv(true),
+  periodicity(unset),
+  min(0.0),
+  max(0.0),
+  max_minus_min(0.0),
+  inv_max_minus_min(0.0)
+{
+}
+
+Value::Value(const std::string& name):
+  action(NULL),
+  value_set(false),
+  value(0.0),
+  inputForce(0.0),
+  hasForce(false),
+  hasDeriv(true),
+  name(name),
   periodicity(unset),
   min(0.0),
   max(0.0),

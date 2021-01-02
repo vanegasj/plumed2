@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -71,7 +71,7 @@ class Matrix:
   template <typename U> friend int pseudoInvert( const Matrix<U>&, Matrix<double>& );
   /// Calculate the logarithm of the determinant of a symmetric matrix - returns zero if succesfull
   template <typename U> friend int logdet( const Matrix<U>&, double& );
-  /// Invert a matrix (works for both symmetric and assymetric matrices) - returns zero if sucesfull
+  /// Invert a matrix (works for both symmetric and asymmetric matrices) - returns zero if sucesfull
   template <typename U> friend int Invert( const Matrix<U>&, Matrix<double>& );
   /// Do a cholesky decomposition of a matrix
   template <typename U> friend void cholesky( const Matrix<U>&, Matrix<U>& );

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -19,16 +19,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with plumed.  If not, see <http://www.gnu.org/licenses/>.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-#include <cmath>
 
 #include "Function.h"
 #include "ActionRegister.h"
-
-#include <string>
-#include <cstring>
-#include <iostream>
-
-using namespace std;
 
 namespace PLMD {
 namespace function {
@@ -50,14 +43,48 @@ Here below is a case where you have defined three frames and you want to
 calculate the progress along the path and the distance from it in p1
 
 \plumedfile
-t1: RMSD REFERENCE=frame_1.dat TYPE=OPTIMAL SQUARED
-t2: RMSD REFERENCE=frame_21.dat TYPE=OPTIMAL SQUARED
-t3: RMSD REFERENCE=frame_42.dat TYPE=OPTIMAL SQUARED
+t1: RMSD REFERENCE=frame_1.pdb TYPE=OPTIMAL SQUARED
+t2: RMSD REFERENCE=frame_21.pdb TYPE=OPTIMAL SQUARED
+t3: RMSD REFERENCE=frame_42.pdb TYPE=OPTIMAL SQUARED
 p1: FUNCPATHMSD ARG=t1,t2,t3 LAMBDA=500.0
 PRINT ARG=t1,t2,t3,p1.s,p1.z STRIDE=1 FILE=colvar FMT=%8.4f
 \endplumedfile
 
-In this second example is shown how to define a PATH in the \ref CONTACTMAP space:
+For this input you would then define the position of the reference coordinates in three separate pdb files.  The contents of the
+file frame_1.pdb are shown below:
+
+\auxfile{frame_1.pdb}
+ATOM      1  CL  ALA     1      -3.171   0.295   2.045  1.00  1.00
+ATOM      5  CLP ALA     1      -1.819  -0.143   1.679  1.00  1.00
+ATOM      6  OL  ALA     1      -1.177  -0.889   2.401  1.00  1.00
+ATOM      7  NL  ALA     1      -1.313   0.341   0.529  1.00  1.00
+ATOM      8  HL  ALA     1      -1.845   0.961  -0.011  1.00  1.00
+END
+\endauxfile
+
+This is then frame.21.pdb:
+
+\auxfile{frame_21.pdb}
+ATOM      1  CL  ALA     1      -3.089   1.850   1.546  1.00  1.00
+ATOM      5  CLP ALA     1      -1.667   1.457   1.629  1.00  1.00
+ATOM      6  OL  ALA     1      -0.974   1.868   2.533  1.00  1.00
+ATOM      7  NL  ALA     1      -1.204   0.683   0.642  1.00  1.00
+ATOM      8  HL  ALA     1      -1.844   0.360  -0.021  1.00  1.00
+END
+\endauxfile
+
+and finally this is frame_42.pdb:
+
+\auxfile{frame_42.pdb}
+ATOM      1  CL  ALA     1      -3.257   1.605   1.105  1.00  1.00
+ATOM      5  CLP ALA     1      -1.941   1.459   0.447  1.00  1.00
+ATOM      6  OL  ALA     1      -1.481   2.369  -0.223  1.00  1.00
+ATOM      7  NL  ALA     1      -1.303   0.291   0.647  1.00  1.00
+ATOM      8  HL  ALA     1      -1.743  -0.379   1.229  1.00  1.00
+END
+\endauxfile
+
+This second example shows how to define a PATH in \ref CONTACTMAP space:
 
 \plumedfile
 CONTACTMAP ...
@@ -94,7 +121,7 @@ p1: FUNCPATHMSD ARG=c1,c2,c3 LAMBDA=500.0
 PRINT ARG=c1,c2,c3,p1.s,p1.z STRIDE=1 FILE=colvar FMT=%8.4f
 \endplumedfile
 
-In this third example is shown how to define a PATH in the \ref PIV space:
+This third example shows how to define a PATH in \ref PIV space:
 
 \plumedfile
 PIV ...
@@ -142,30 +169,30 @@ class FuncPathMSD : public Function {
   double lambda;
   int neigh_size;
   double neigh_stride;
-  vector< pair<Value *,double> > neighpair;
-  map<Value *,double > indexmap; // use double to allow isomaps
-  vector <Value*> allArguments;
+  std::vector< std::pair<Value *,double> > neighpair;
+  std::map<Value *,double > indexmap; // use double to allow isomaps
+  std::vector <Value*> allArguments;
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // this below is useful when one wants to sort a vector of double and have back the order
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 // create a custom sorter
-  typedef vector<double>::const_iterator myiter;
+  typedef std::vector<double>::const_iterator myiter;
   struct ordering {
-    bool operator ()(pair<unsigned, myiter> const& a, pair<unsigned, myiter> const& b) {
+    bool operator ()(std::pair<unsigned, myiter> const& a, std::pair<unsigned, myiter> const& b) {
       return *(a.second) < *(b.second);
     }
   };
 // sorting utility
-  vector<int> increasingOrder( vector<double> &v) {
+  std::vector<int> increasingOrder( std::vector<double> &v) {
     // make a pair
-    vector< pair<unsigned, myiter> > order(v.size());
+    std::vector< std::pair<unsigned, myiter> > order(v.size());
     unsigned n = 0;
     for (myiter it = v.begin(); it != v.end(); ++it, ++n) {
       order[n] = make_pair(n, it); // note: heere i do not put the values but the addresses that point to the value
     }
     // now sort according the second value
-    sort(order.begin(), order.end(), ordering());
-    vector<int> vv(v.size()); n=0;
+    std::sort(order.begin(), order.end(), ordering());
+    std::vector<int> vv(v.size()); n=0;
     for (const auto & it : order) {
       vv[n]=it.first; n++;
     }
@@ -175,7 +202,7 @@ class FuncPathMSD : public Function {
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   struct pairordering {
-    bool operator ()(pair<Value *, double> const& a, pair<Value*, double> const& b) {
+    bool operator ()(std::pair<Value *, double> const& a, std::pair<Value*, double> const& b) {
       return (a).second > (b).second;
     }
   };
@@ -183,8 +210,8 @@ class FuncPathMSD : public Function {
 public:
   explicit FuncPathMSD(const ActionOptions&);
 // active methods:
-  virtual void calculate();
-  virtual void prepare();
+  void calculate() override;
+  void prepare() override;
   static void registerKeywords(Keywords& keys);
 };
 
@@ -258,7 +285,7 @@ void FuncPathMSD::calculate() {
   Value* val_z_path=getPntrToComponent("z");
 
   for(auto & it : neighpair) {
-    it.second=exp(-lambda*(it.first->get()));
+    it.second=std::exp(-lambda*(it.first->get()));
     s_path+=(indexmap[it.first])*it.second;
     partition+=it.second;
   }
@@ -292,7 +319,7 @@ void FuncPathMSD::prepare() {
   if (neigh_size>0) {
     if(neighpair.size()==allArguments.size()) { // I just did the complete round: need to sort, shorten and give it a go
       // sort the values
-      sort(neighpair.begin(),neighpair.end(),pairordering());
+      std::sort(neighpair.begin(),neighpair.end(),pairordering());
       // resize the effective list
       neighpair.resize(neigh_size);
       log.printf("  NEIGH LIST NOW INCLUDE INDEXES: ");
@@ -310,7 +337,7 @@ void FuncPathMSD::prepare() {
       for(unsigned i=0; i<allArguments.size(); i++)neighpair[i].first=allArguments[i];
     }
   }
-  vector<Value*> argstocall;
+  std::vector<Value*> argstocall;
 //log.printf("PREPARING \n");
   argstocall.clear();
   if(!neighpair.empty()) {

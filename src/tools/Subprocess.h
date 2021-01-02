@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2019 The plumed team
+   Copyright (c) 2019,2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -89,7 +89,7 @@ public:
     Subprocess* sp=nullptr;
     /// Private constructor.
     /// Only to be called by Subprocess::contStop()
-    Handler(Subprocess* sp) noexcept;
+    explicit Handler(Subprocess* sp) noexcept;
     friend class Subprocess;
   public:
     /// Default constructor
@@ -102,7 +102,7 @@ public:
     Handler & operator=(const Handler & handler) = delete;
     /// Move constructor.
     Handler(Handler &&) noexcept;
-    /// Move assignemnt.
+    /// Move assignment.
     Handler & operator=(Handler && handler) noexcept;
   };
 /// Constructor with a command line.

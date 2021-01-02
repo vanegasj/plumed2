@@ -307,13 +307,14 @@ endif
 # vim syntax file
 	if test -d ../../vim/syntax ; then mkdir -p "$(DESTDIR)$(libdir)/$(program_name)" && cd ../../ && tar cf - vim/syntax | tar xf - -C "$(DESTDIR)$(libdir)/$(program_name)/" ; fi
 	if test -d ../../vim/help ; then mkdir -p "$(DESTDIR)$(libdir)/$(program_name)" && cd ../../ && tar cf - vim/help | tar xf - -C "$(DESTDIR)$(libdir)/$(program_name)/" ; fi
-	if test -f ../../vim/scripts.vim ; then cp ../../vim/scripts.vim  "$(DESTDIR)$(libdir)/$(program_name)/vim/" ; fi
+	if test -f ../../vim/scripts.vim ; then mkdir -p "$(DESTDIR)$(libdir)/$(program_name)/vim" && cp ../../vim/scripts.vim  "$(DESTDIR)$(libdir)/$(program_name)/vim/" ; fi
 # python installation (rebuild prior to installation so as to discover plumed in path)
 ifdef python_bin
 	cp -pr ../../python install 
 	cd install/python && rm -fr *.so plumed.cpp build && \
           unset CXX && unset CC && unset CFLAGS && unset CXXFLAGS && unset LDSHARED && \
           plumed_program_name=plumed \
+          plumed_force_cython=yes \
           plumed_version=$(VERSION) \
           plumed_include_dir=../../../wrapper \
           plumed_default_kernel="$(libdir)/lib$(program_name)Kernel.$(SOEXT)" \
@@ -383,7 +384,7 @@ ifeq ($(program_can_run),no)
 	@echo "WARNING: This is normal if you are cross compiling."
 	@echo "WARNING: - to patch an MD code use '$(program_name)-patch'"
 	@echo "WARNING: - to verify configuration use '$(program_name)-config'"
-	@echo "WARNING: - a few other command line tools are avalable as $(libdir)/$(program_name)/plumed-*"
+	@echo "WARNING: - a few other command line tools are available as $(libdir)/$(program_name)/plumed-*"
 else ifeq ($(program_can_run_mpi),no)
 	@echo "WARNING: $(program_name) executable will not run on this machine"
 	@echo "WARNING: unless you invoke it as '$(program_name) --no-mpi'"

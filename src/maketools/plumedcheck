@@ -158,7 +158,7 @@ BEGIN{
 
 # for each input file
 BEGINFILE{
-# these variables are used to track if a file containes at least one item of a specific kind
+# these variables are used to track if a file contains at least one item of a specific kind
 # as such they should be reset for every new input file
   found_namespace_plmd=0
   found_namespace_module=0
@@ -210,7 +210,7 @@ BEGINFILE{
         sub("/[^/]*$","",path);
 # an explicit cd is required since the command might be run from a different directory
         system("cd " path "; make show_used_modules 2>/dev/null > " tempfile)
-        if(getline < tempfile >0 && $1=="used_modules") for(i=2;i<=NF;i++) used_modules[module][$i]=1
+        while(getline < tempfile >0) if($1=="used_modules") for(i=2;i<=NF;i++) used_modules[module][$i]=1
         close(tempfile)
         system("rm " tempfile)
         used_modules_here=""
@@ -264,7 +264,10 @@ BEGINFILE{
 # DOC: When you modify the latter, the former should be regenerated using `autoconf` and
 # DOC: committed to git. This error indicates that the `./configure.ac` and `./configure` files
 # DOC: in the repository are not consistent.
-    if(s!=0) error("autoconf","autoconf not satisfied")
+# DOC: Notice that Ubuntu 16 ships with an autoconf version that is not standard
+# DOC: (2.69 + some patch). This makes this test report a false positive.
+# DOC: This is thus changed to a style warning.
+    if(s!=0) style("autoconf","autoconf not satisfied")
     system("rm " tempfile)
   }
 
@@ -351,6 +354,16 @@ BEGINFILE{
 # DOC: not installed. They should not be directly included in header files, otherwise
 # DOC: those header files could be not usable once PLUMED is installed.
       if(filetype=="header" && h!~"\\.h") error("non_h_header","including non '.h' file " h " in a header file");
+      if(h~"^[A-Za-z0-9_][A-Za-z0-9_]*/") {
+        sub("/.*$","",h)
+# DOC: :include_non_used_module:
+# DOC: When including a file in the form `"dir/file.h"`, `dir` should be an used module.
+# DOC: This makes sure that we do not include system files that by chance are named as PLUMED modules.
+# DOC: Indeed, when including `"file"` if the file is not found in the current path it is searched in
+# DOC: system directories.
+        if(!isarray(used_modules[module]) || (h in used_modules[module])==0)
+            error("include_non_used_module","including file in form " h "/file where " h " is not a used module");
+      }
     }
 
 # check if namespace PLMD is present
@@ -473,9 +486,24 @@ BEGINFILE{
 # DOC: A statement `using namespace` in header files is considered bad practice. Indeed, this would imply that
 # DOC: any other file including that header file would be using the same namespace.
 # DOC: This is true also for `std` namespace, and that's why you typically find full specifications
-# DOC: such as `std::string` in header files. In source files you are free to use `using namespace PLMD` and/or
-# DOC: `using namespace std` if you like, since these commands will only affect the source file where they are used.
+# DOC: such as `std::string` in header files.
     if(filetype=="header" && match($0,"using *namespace") && !in_plumed_doc && !in_doxygen) error("using_namespace_in_header","using namespace statement in header file")
+
+    if(module_type[module]=="default-off") {
+# check that "using namespace" statements are not used in source files
+# DOC: :using_namespace_std_in_source:
+# DOC: A statement `using namespace std` in a source files is considered bad practice. Indeed, it makes it difficult to
+# DOC: distinguish classes and functions that are taken from the standard library (such as `std::vector`) from similar
+# DOC: names declared locally. This is currently a style issue, but will become an error in the future.
+      if(filetype=="source" && match($0,"using *namespace *std") && !in_plumed_doc && !in_doxygen ) style("using_namespace_std_in_source","using namespace std statement in source file")
+    } else {
+# check that "using namespace" statements are not used in source files
+# DOC: :using_namespace_std_in_default_source:
+# DOC: A statement `using namespace std` in a source files is considered bad practice. Indeed, it makes it difficult to
+# DOC: distinguish classes and functions that are taken from the standard library (such as `std::vector`) from similar
+# DOC: names declared locally. This is currently an error for default modules.
+      if(filetype=="source" && match($0,"using *namespace *std") && !in_plumed_doc && !in_doxygen) error("using_namespace_std_in_default_source","using namespace std statement in source file")
+    }
   }
 
 # analyze HAS macros (bouth source and autoconf)
@@ -560,8 +588,8 @@ ENDFILE{
        error("non_existing_cpp","file " file " is a header but there is no corresponding source");
      }
      while((getline < cppfile)>=0){
-       if(match($0,"^ *#include")){
-         sub("^ *#include","");
+       if(match($0,"^# *include")){
+         sub("^# *include","");
 # DOC: :non_included_h:
 # DOC: The source file corresponding to a header file (that is: with the same name) should include it as the first included file.
 # DOC: This is to make sure that all the header files that we install can be individually included and compiled.

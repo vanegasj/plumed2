@@ -6,7 +6,9 @@
 !/adjmat
 !/function
 !/analysis
+!/annfunc
 !/basic
+!/core
 !/crystallization
 !/dimred
 !/eds
@@ -24,6 +26,9 @@
 !/pamm
 !/isdb
 !/ves
+!/funnel
+!/opes
+!/tools
 # These files we just want to ignore completely
 tmp
 report.txt

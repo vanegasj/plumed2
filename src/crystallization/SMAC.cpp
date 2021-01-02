@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2014-2019 The plumed team
+   Copyright (c) 2014-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -130,8 +130,8 @@ public:
   static void registerKeywords( Keywords& keys );
   explicit SMAC(const ActionOptions& ao);
   double computeVectorFunction( const Vector& conn, const std::vector<double>& vec1, const std::vector<double>& vec2,
-                                Vector& dconn, std::vector<double>& dvec1, std::vector<double>& dvec2 ) const ;
-  double calculateCoordinationPrefactor( const double& coord, double& df ) const ;
+                                Vector& dconn, std::vector<double>& dvec1, std::vector<double>& dvec2 ) const override;
+  double calculateCoordinationPrefactor( const double& coord, double& df ) const override;
 };
 
 PLUMED_REGISTER_ACTION(SMAC,"SMAC")
@@ -173,7 +173,7 @@ double SMAC::computeVectorFunction( const Vector& conn, const std::vector<double
   unsigned nvectors = ( vec1.size() - 2 ) / 3; plumed_assert( (vec1.size()-2)%3==0 );
   std::vector<Vector> dv1(nvectors), dv2(nvectors), tdconn(nvectors); Torsion t; std::vector<Vector> v1(nvectors), v2(nvectors);
   std::vector<std::unique_ptr<Value>> pos;
-  for(unsigned i=0; i<nvectors; ++i) { pos.emplace_back( new Value() ); pos[i]->setDomain( "-pi", "pi" ); }
+  for(unsigned i=0; i<nvectors; ++i) { pos.emplace_back( Tools::make_unique<Value>() ); pos[i]->setDomain( "-pi", "pi" ); }
 
   for(unsigned j=0; j<nvectors; ++j) {
     for(unsigned k=0; k<3; ++k) {

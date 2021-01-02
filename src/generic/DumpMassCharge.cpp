@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2019 The plumed team
+   Copyright (c) 2015-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -26,8 +26,6 @@
 #include "core/PlumedMain.h"
 #include "core/Atoms.h"
 
-using namespace std;
-
 namespace PLMD
 {
 namespace generic {
@@ -52,7 +50,7 @@ file that you use during an MD simulations:
 \plumedfile
 c1: COM ATOMS=1-10
 c2: COM ATOMS=11-20
-PRINT ARG=c1,c2 FILE=colvar STRIDE=100
+DUMPATOMS ATOMS=c1,c2 FILE=coms.xyz STRIDE=100
 
 DUMPMASSCHARGE FILE=mcfile
 \endplumedfile
@@ -93,7 +91,7 @@ class DumpMassCharge:
   public ActionAtomistic,
   public ActionPilot
 {
-  string file;
+  std::string file;
   bool first;
   bool second;
   bool print_masses;
@@ -102,10 +100,10 @@ public:
   explicit DumpMassCharge(const ActionOptions&);
   ~DumpMassCharge();
   static void registerKeywords( Keywords& keys );
-  void prepare();
-  void calculate() {}
-  void apply() {}
-  void update();
+  void prepare() override;
+  void calculate() override {}
+  void apply() override {}
+  void update() override;
 };
 
 PLUMED_REGISTER_ACTION(DumpMassCharge,"DUMPMASSCHARGE")
@@ -130,7 +128,7 @@ DumpMassCharge::DumpMassCharge(const ActionOptions&ao):
   print_masses(true),
   print_charges(true)
 {
-  vector<AtomNumber> atoms;
+  std::vector<AtomNumber> atoms;
   parse("FILE",file);
   if(file.length()==0) error("name of output file was not specified");
   log.printf("  output written to file %s\n",file.c_str());
@@ -173,7 +171,7 @@ DumpMassCharge::DumpMassCharge(const ActionOptions&ao):
 
 void DumpMassCharge::prepare() {
   if(!first && second) {
-    requestAtoms(vector<AtomNumber>());
+    requestAtoms(std::vector<AtomNumber>());
     second=false;
   }
 }

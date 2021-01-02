@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -23,7 +23,6 @@
 #include "tools/Exception.h"
 #include "tools/OpenMP.h"
 
-using namespace std;
 namespace PLMD {
 
 void ActionWithValue::registerKeywords(Keywords& keys) {
@@ -104,12 +103,12 @@ Value* ActionWithValue::copyOutput( const unsigned& n ) const {
 
 void ActionWithValue::addValue() {
   plumed_massert(values.empty(),"You have already added the default value for this action");
-  values.emplace_back(new Value(this,getLabel(), false ) );
+  values.emplace_back(Tools::make_unique<Value>(this,getLabel(), false ) );
 }
 
 void ActionWithValue::addValueWithDerivatives() {
   plumed_massert(values.empty(),"You have already added the default value for this action");
-  values.emplace_back(new Value(this,getLabel(), true ) );
+  values.emplace_back(Tools::make_unique<Value>(this,getLabel(), true ) );
 }
 
 void ActionWithValue::setNotPeriodic() {
@@ -135,8 +134,8 @@ Value* ActionWithValue::getPntrToValue() {
 
 void ActionWithValue::addComponent( const std::string& name ) {
   if( !keywords.outputComponentExists(name,true) ) {
-    warning("a description of component " + name + " has not been added to the manual. Components should be registered like keywords in "
-            "registerKeywords as described in the developer docs.");
+    plumed_merror("a description of component " + name + " has not been added to the manual. Components should be registered like keywords in "
+                  "registerKeywords as described in the developer docs.");
   }
   std::string thename; thename=getLabel() + "." + name;
   for(unsigned i=0; i<values.size(); ++i) {
@@ -145,15 +144,15 @@ void ActionWithValue::addComponent( const std::string& name ) {
     plumed_massert(values[i]->name!=thename&&name!="bias","Since PLUMED 2.3 the component 'bias' is automatically added to all biases by the general constructor!\n"
                    "Remove the line addComponent(\"bias\") from your bias.");
   }
-  values.emplace_back(new Value(this,thename, false ) );
+  values.emplace_back(Tools::make_unique<Value>(this,thename, false ) );
   std::string msg="  added component to this action:  "+thename+" \n";
   log.printf(msg.c_str());
 }
 
 void ActionWithValue::addComponentWithDerivatives( const std::string& name ) {
   if( !keywords.outputComponentExists(name,true) ) {
-    warning("a description of component " + name + " has not been added to the manual. Components should be registered like keywords in "
-            "registerKeywords as described in the developer doc.");
+    plumed_merror("a description of component " + name + " has not been added to the manual. Components should be registered like keywords in "
+                  "registerKeywords as described in the developer doc.");
   }
   std::string thename; thename=getLabel() + "." + name;
   for(unsigned i=0; i<values.size(); ++i) {
@@ -162,7 +161,7 @@ void ActionWithValue::addComponentWithDerivatives( const std::string& name ) {
     plumed_massert(values[i]->name!=thename&&name!="bias","Since PLUMED 2.3 the component 'bias' is automatically added to all biases by the general constructor!\n"
                    "Remove the line addComponentWithDerivatives(\"bias\") from your bias.");
   }
-  values.emplace_back(new Value(this,thename, true ) );
+  values.emplace_back(Tools::make_unique<Value>(this,thename, true ) );
   std::string msg="  added component to this action:  "+thename+" \n";
   log.printf(msg.c_str());
 }

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -21,11 +21,6 @@
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 #include "Colvar.h"
 #include "ActionRegister.h"
-
-#include <string>
-#include <cmath>
-
-using namespace std;
 
 namespace PLMD {
 namespace colvar {
@@ -51,7 +46,7 @@ The following tells plumed to calculate the dipole of the group of atoms contain
 the atoms from 1-10 and print it every 5 steps
 \plumedfile
 d: DIPOLE GROUP=1-10
-PRINT FILE=output STRIDE=5 ARG=5
+PRINT FILE=output STRIDE=5 ARG=d
 \endplumedfile
 
 \attention
@@ -64,12 +59,12 @@ on the position) is computed on the geometric center of the group.
 //+ENDPLUMEDOC
 
 class Dipole : public Colvar {
-  vector<AtomNumber> ga_lista;
+  std::vector<AtomNumber> ga_lista;
   bool components;
   bool nopbc;
 public:
   explicit Dipole(const ActionOptions&);
-  virtual void calculate();
+  void calculate() override;
   static void registerKeywords(Keywords& keys);
 };
 
@@ -117,7 +112,7 @@ void Dipole::calculate()
   if(!nopbc) makeWhole();
   double ctot=0.;
   unsigned N=getNumberOfAtoms();
-  vector<double> charges(N);
+  std::vector<double> charges(N);
   Vector dipje;
 
   for(unsigned i=0; i<N; ++i) {

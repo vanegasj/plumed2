@@ -172,12 +172,12 @@ order of the basis functions, the interval on which the
 basis functions are defined, and the step size used
 in the optimizer, are left unfilled.
 \plumedfile
-bf1: BF_LEGENDRE ORDER=__ MINIMUM=__ MAXIMUM=__
+bf1: BF_LEGENDRE ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
 
 VES_LINEAR_EXPANSION ...
  ARG=d1
  BASIS_FUNCTIONS=bf1
- TEMP=__
+ TEMP=__FILL__
  GRID_BINS=200
  LABEL=b1
 ... VES_LINEAR_EXPANSION
@@ -186,7 +186,7 @@ OPT_AVERAGED_SGD ...
  BIAS=b1
  STRIDE=1000
  LABEL=o1
- STEPSIZE=__
+ STEPSIZE=__FILL__
  FES_OUTPUT=500
  COEFFS_OUTPUT=10
 ... OPT_AVERAGED_SGD
@@ -201,15 +201,15 @@ dynamic and needs to be iteratively updated with a stride that is given
 using the TARGETDIST_STRIDE within the optimizer.
 
 \plumedfile
-bf1: BF_FOURIER  ORDER=__ MINIMUM=__ MAXIMUM=__
-bf2: BF_LEGENDRE ORDER=__ MINIMUM=__ MAXIMUM=__
+bf1: BF_FOURIER  ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
+bf2: BF_LEGENDRE ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
 
 td_wt: TD_WELLTEMPERED BIASFACTOR=10.0
 
 VES_LINEAR_EXPANSION ...
  ARG=cv1,cv2
  BASIS_FUNCTIONS=bf1,bf2
- TEMP=__
+ TEMP=__FILL__
  GRID_BINS=100
  LABEL=b1
  TARGET_DISTRIBUTION=td_wt
@@ -219,7 +219,7 @@ OPT_AVERAGED_SGD ...
  BIAS=b1
  STRIDE=1000
  LABEL=o1
- STEPSIZE=__
+ STEPSIZE=__FILL__
  FES_OUTPUT=500
  COEFFS_OUTPUT=10
  TARGETDIST_STRIDE=500
@@ -232,13 +232,13 @@ only fills the free energy landscape up a certain level. In this case
 the target distribution is also dynamic and needs to iteratively updated.
 
 \plumedfile
-bf1: BF_LEGENDRE ORDER=__ MINIMUM=__ MAXIMUM=__
-bf2: BF_LEGENDRE ORDER=__ MINIMUM=__ MAXIMUM=__
+bf1: BF_LEGENDRE ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
+bf2: BF_LEGENDRE ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
 
 VES_LINEAR_EXPANSION ...
  ARG=cv1,cv2
  BASIS_FUNCTIONS=bf1,bf2
- TEMP=__
+ TEMP=__FILL__
  GRID_BINS=100
  LABEL=b1
  BIAS_CUTOFF=20.0
@@ -248,7 +248,7 @@ OPT_AVERAGED_SGD ...
  BIAS=b1
  STRIDE=1000
  LABEL=o1
- STEPSIZE=__
+ STEPSIZE=__FILL__
  FES_OUTPUT=500
  COEFFS_OUTPUT=10
  TARGETDIST_STRIDE=500
@@ -260,13 +260,13 @@ kinetics. For this you need read in the final coefficients from file
 (e.g. coeffs_final.data in this case) by using the
 COEFFS keyword (also, no optimizer should be defined in the input)
 \plumedfile
-bf1: BF_LEGENDRE ORDER=__ MINIMUM=__ MAXIMUM=__
-bf2: BF_LEGENDRE ORDER=__ MINIMUM=__ MAXIMUM=__
+bf1: BF_LEGENDRE ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
+bf2: BF_LEGENDRE ORDER=__FILL__ MINIMUM=__FILL__ MAXIMUM=__FILL__
 
 VES_LINEAR_EXPANSION ...
  ARG=cv1,cv2
  BASIS_FUNCTIONS=bf1,bf2
- TEMP=__
+ TEMP=__FILL__
  GRID_BINS=100
  LABEL=b1
  BIAS_CUTOFF=20.0
@@ -287,28 +287,32 @@ private:
   LinearBasisSetExpansion* bias_expansion_pntr_;
   size_t ncoeffs_;
   Value* valueForce2_;
+  bool all_values_inside;
+  std::vector<double> bf_values;
+  bool bf_values_set;
 public:
   explicit VesLinearExpansion(const ActionOptions&);
   ~VesLinearExpansion();
-  void calculate();
-  void updateTargetDistributions();
-  void restartTargetDistributions();
+  void calculate() override;
+  void update() override;
+  void updateTargetDistributions() override;
+  void restartTargetDistributions() override;
   //
-  void setupBiasFileOutput();
-  void writeBiasToFile();
-  void resetBiasFileOutput();
+  void setupBiasFileOutput() override;
+  void writeBiasToFile() override;
+  void resetBiasFileOutput() override;
   //
-  void setupFesFileOutput();
-  void writeFesToFile();
-  void resetFesFileOutput();
+  void setupFesFileOutput() override;
+  void writeFesToFile() override;
+  void resetFesFileOutput() override;
   //
-  void setupFesProjFileOutput();
-  void writeFesProjToFile();
+  void setupFesProjFileOutput() override;
+  void writeFesProjToFile() override;
   //
-  void writeTargetDistToFile();
-  void writeTargetDistProjToFile();
+  void writeTargetDistToFile() override;
+  void writeTargetDistProjToFile() override;
   //
-  double calculateReweightFactor() const;
+  double calculateReweightFactor() const override;
   //
   static void registerKeywords( Keywords& keys );
 };
@@ -334,7 +338,10 @@ VesLinearExpansion::VesLinearExpansion(const ActionOptions&ao):
   nargs_(getNumberOfArguments()),
   basisf_pntrs_(0),
   bias_expansion_pntr_(NULL),
-  valueForce2_(NULL)
+  valueForce2_(NULL),
+  all_values_inside(true),
+  bf_values(0),
+  bf_values_set(false)
 {
   std::vector<std::string> basisf_labels;
   parseMultipleValues("BASIS_FUNCTIONS",basisf_labels,nargs_);
@@ -367,6 +374,7 @@ VesLinearExpansion::VesLinearExpansion(const ActionOptions&ao):
   bias_expansion_pntr_->linkVesBias(this);
   bias_expansion_pntr_->setGridBins(this->getGridBins());
   //
+  bf_values.assign(ncoeffs_,0.0);
 
 
 
@@ -386,12 +394,12 @@ VesLinearExpansion::VesLinearExpansion(const ActionOptions&ao):
   setTargetDistAverages(bias_expansion_pntr_->TargetDistAverages());
   //
   if(coeffs_read && biasCutoffActive()) {
-    updateTargetDistributions();
+    VesLinearExpansion::updateTargetDistributions();
   }
   //
   if(coeffs_read) {
-    setupBiasFileOutput();
-    writeBiasToFile();
+    VesLinearExpansion::setupBiasFileOutput();
+    VesLinearExpansion::writeBiasToFile();
   }
 
   addComponent("force2"); componentIsNotPeriodic("force2");
@@ -410,17 +418,16 @@ void VesLinearExpansion::calculate() {
 
   std::vector<double> cv_values(nargs_);
   std::vector<double> forces(nargs_);
-  std::vector<double> coeffsderivs_values(ncoeffs_);
 
   for(unsigned int k=0; k<nargs_; k++) {
     cv_values[k]=getArgument(k);
   }
 
-  bool all_inside = true;
-  double bias = bias_expansion_pntr_->getBiasAndForces(cv_values,all_inside,forces,coeffsderivs_values);
+  all_values_inside = true;
+  double bias = bias_expansion_pntr_->getBiasAndForces(cv_values,all_values_inside,forces,bf_values);
   if(biasCutoffActive()) {
-    applyBiasCutoff(bias,forces,coeffsderivs_values);
-    coeffsderivs_values[0]=1.0;
+    applyBiasCutoff(bias,forces,bf_values);
+    bf_values[0]=1.0;
   }
   double totalForce2 = 0.0;
   for(unsigned int k=0; k<nargs_; k++) {
@@ -430,10 +437,25 @@ void VesLinearExpansion::calculate() {
 
   setBias(bias);
   valueForce2_->set(totalForce2);
-  if(all_inside) {
-    addToSampledAverages(coeffsderivs_values);
-  }
+
+  bf_values_set = true;
 }
+
+
+void VesLinearExpansion::update() {
+  if(!bf_values_set) {
+    warning("VesLinearExpansion::update() is being called without calling VesLinearExpansion::calculate() first to calculate the basis function values. This can lead to incorrect behavior.");
+  }
+  if(all_values_inside && bf_values_set) {
+    addToSampledAverages(bf_values);
+  }
+  std::fill(bf_values.begin(), bf_values.end(), 0.0);
+  bf_values_set = false;
+}
+
+
+
+
 
 
 void VesLinearExpansion::updateTargetDistributions() {

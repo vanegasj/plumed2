@@ -139,12 +139,12 @@ void Optimizer::registerKeywords(Keywords& keys) {
 Optimizer::Optimizer(const ActionOptions& ao)
   : PLUMED_COLVAR_INIT(ao),
     first_step_(true),
+    opt_value_(0.0),
     pbc_(true),
+    sampling_r_(0.0),
     serial_(false),
     validate_list_(true),
-    first_time_(true),
-    opt_value_(0.0),
-    sampling_r_(0.0)
+    first_time_(true)
 {
   parseFlag("SERIAL", serial_);
 
@@ -227,9 +227,11 @@ Optimizer::Optimizer(const ActionOptions& ao)
       neighbor_list_ = new NeighborList(
         ga_list,
         gb_list,
+        serial_,
         do_pair,
         pbc_,
         getPbc(),
+        comm,
         nl_cutoff_,
         nl_stride_
       );
@@ -238,9 +240,11 @@ Optimizer::Optimizer(const ActionOptions& ao)
       neighbor_list_=new NeighborList(
         ga_list,
         gb_list,
+        serial_,
         do_pair,
         pbc_,
-        getPbc()
+        getPbc(),
+        comm
       );
     }
   }
@@ -248,8 +252,10 @@ Optimizer::Optimizer(const ActionOptions& ao)
     if (do_neigh) {
       neighbor_list_ = new NeighborList(
         ga_list,
+        serial_,
         pbc_,
         getPbc(),
+        comm,
         nl_cutoff_,
         nl_stride_
       );
@@ -257,8 +263,10 @@ Optimizer::Optimizer(const ActionOptions& ao)
     else {
       neighbor_list_=new NeighborList(
         ga_list,
+        serial_,
         pbc_,
-        getPbc()
+        getPbc(),
+        comm
       );
     }
   }

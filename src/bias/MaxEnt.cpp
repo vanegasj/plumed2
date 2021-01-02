@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2016-2019 The plumed team
+   Copyright (c) 2016-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -22,30 +22,15 @@
 #include "Bias.h"
 #include "core/PlumedMain.h"
 #include "core/Atoms.h"
-#include <string>
-#include <cstring>
-//#include "ActionRegister.h"
 #include "core/ActionRegister.h"
 #include "core/ActionWithValue.h"
 #include "tools/Communicator.h"
 #include "tools/File.h"
-#include <iostream>
-
-//#include "Analysis.h"
-//#include "core/PlumedMain.h"
-//#include "core/ActionRegister.h"
-//#include "tools/Grid.h"
-//#include "tools/KernelFunctions.h"
-//#include "tools/IFile.h"
-//#include "tools/OFile.h"
 
 // The original implementation of this method was contributed
 // by Andrea Cesari (andreacesari90@gmail.com).
 // Copyright has been then transferred to PLUMED developers
 // (see https://github.com/plumed/plumed2/blob/master/.github/CONTRIBUTING.md)
-
-using namespace std;
-
 
 namespace PLMD {
 namespace bias {
@@ -104,15 +89,15 @@ PACE=200
 TSTART=100
 TEND=500
 LABEL=restraint
-PRINT ARG=restraint.bias
 ... MAXENT
+PRINT ARG=restraint.bias
 \endplumedfile
 Lagrangian multipliers will be printed on a file called restraint.bias
 The following input tells plumed to restrain the distance between atoms 7 and 15
 to be greater than 0.2 and to print the energy of the restraint
 \plumedfile
 DISTANCE ATOMS=7,15 LABEL=d
-MAXENT ARG=d TYPE=INEQUAL> AT=0.02 KAPPA=35000.0 TAU= LABEL=restraint
+MAXENT ARG=d TYPE=INEQUAL> AT=0.02 KAPPA=35000.0 TAU=3 LABEL=restraint
 PRINT ARG=restraint.bias
 \endplumedfile
 
@@ -142,8 +127,7 @@ class MaxEnt : public Bias {
   double totalWork;
   double BetaReweightBias;
   double simtemp;
-  double reweight_bias2;
-  vector<ActionWithValue*> biases;
+  std::vector<ActionWithValue*> biases;
   std::string type;
   std::string error_type;
   double alpha;
@@ -153,9 +137,9 @@ class MaxEnt : public Bias {
   Value* valueWork;
   OFile lagmultOfile_;
   IFile ifile;
-  string lagmultfname;
-  string ifilesnames;
-  string fmt;
+  std::string lagmultfname;
+  std::string ifilesnames;
+  std::string fmt;
   bool isFirstStep;
   bool reweight;
   bool no_broadcast;
@@ -164,15 +148,15 @@ class MaxEnt : public Bias {
   int myrep,nrep;
 public:
   explicit MaxEnt(const ActionOptions&);
-  void calculate();
-  void update();
+  void calculate() override;
+  void update() override;
   void update_lambda();
   static void registerKeywords(Keywords& keys);
   void ReadLagrangians(IFile &ifile);
-  void WriteLagrangians(vector<double> &lagmult,OFile &file);
-  double compute_error(string &err_type,double &l);
-  double convert_lambda(string &type,double lold);
-  void check_lambda_boundaries(string &err_type,double &l);
+  void WriteLagrangians(std::vector<double> &lagmult,OFile &file);
+  double compute_error(const std::string &err_type,double l);
+  double convert_lambda(const std::string &type,double lold);
+  void check_lambda_boundaries(const std::string &err_type,double &l);
 };
 PLUMED_REGISTER_ACTION(MaxEnt,"MAXENT")
 
@@ -320,7 +304,7 @@ MaxEnt::MaxEnt(const ActionOptions&ao):
     comp=getPntrToArgument(i)->getName()+"_error";
     addComponent(comp); componentIsNotPeriodic(comp);
   }
-  string fname;
+  std::string fname;
   fname=lagmultfname;
   ifile.link(*this);
   if(ifile.FileExist(fname)) {
@@ -356,7 +340,7 @@ void MaxEnt::ReadLagrangians(IFile &ifile)
     ifile.scanField();
   }
 }
-void MaxEnt::WriteLagrangians(vector<double> &lagmult,OFile &file) {
+void MaxEnt::WriteLagrangians(std::vector<double> &lagmult,OFile &file) {
   if(printFirstStep) {
     unsigned ncv=getNumberOfArguments();
     file.printField("time",getTimeStep()*getStep());
@@ -373,8 +357,8 @@ void MaxEnt::WriteLagrangians(vector<double> &lagmult,OFile &file) {
     }
   }
 }
-double MaxEnt::compute_error(string &err_type,double &l) {
-  double sigma2=pow(sigma,2.0);
+double MaxEnt::compute_error(const std::string &err_type,double l) {
+  double sigma2=std::pow(sigma,2.0);
   double l2=convert_lambda(type,l);
   double return_error=0;
   if(err_type=="GAUSSIAN" && sigma!=0.0)
@@ -386,7 +370,7 @@ double MaxEnt::compute_error(string &err_type,double &l) {
   }
   return return_error;
 }
-double MaxEnt::convert_lambda(string &type,double lold) {
+double MaxEnt::convert_lambda(const std::string &type,double lold) {
   double return_lambda=0;
   if(type=="EQUAL")
     return_lambda=lold;
@@ -408,15 +392,15 @@ double MaxEnt::convert_lambda(string &type,double lold) {
   }
   return return_lambda;
 }
-void MaxEnt::check_lambda_boundaries(string &err_type,double &l) {
+void MaxEnt::check_lambda_boundaries(const std::string &err_type,double &l) {
   if(err_type=="LAPLACE" && sigma !=0 ) {
     double l2=convert_lambda(err_type,l);
-    if(l2 <-(sqrt(alpha+1)/sigma-0.01)) {
-      l=-(sqrt(alpha+1)/sigma-0.01);
+    if(l2 <-(std::sqrt(alpha+1)/sigma-0.01)) {
+      l=-(std::sqrt(alpha+1)/sigma-0.01);
       log.printf("Lambda exceeded the allowed range\n");
     }
-    if(l2>(sqrt(alpha+1)/sigma-0.01)) {
-      l=sqrt(alpha+1)/sigma-0.01;
+    if(l2>(std::sqrt(alpha+1)/sigma-0.01)) {
+      l=std::sqrt(alpha+1)/sigma-0.01;
       log.printf("Lambda exceeded the allowed range\n");
     }
   }
@@ -441,7 +425,7 @@ void MaxEnt::update_lambda() {
       learning_rate=1.0*k/(1+step/tau[i]);
     else
       learning_rate=1.0*k/(1+time/tau[i]);
-    lambda[i]+=learning_rate*cv*exp(-BetaReweightBias); //update Lagrangian multipliers and reweight them if REWEIGHT is set
+    lambda[i]+=learning_rate*cv*std::exp(-BetaReweightBias); //update Lagrangian multipliers and reweight them if REWEIGHT is set
     check_lambda_boundaries(error_type,lambda[i]);      //check that Lagrangians multipliers not exceed the allowed range
     if(time>=tstart && time <=tend && !done_average[i]) {
       avglambda[i]+=convert_lambda(type,lambda[i]); //compute the average of Lagrangian multipliers over the required time window

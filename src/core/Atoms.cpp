@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -28,8 +28,6 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-
-using namespace std;
 
 namespace PLMD {
 
@@ -246,10 +244,10 @@ void Atoms::share(const std::set<AtomNumber>& unique) {
       }
     } else {
       const int n=(dd.Get_size());
-      vector<int> counts(n);
-      vector<int> displ(n);
-      vector<int> counts5(n);
-      vector<int> displ5(n);
+      std::vector<int> counts(n);
+      std::vector<int> displ(n);
+      std::vector<int> counts5(n);
+      std::vector<int> displ5(n);
       dd.Allgather(count,counts);
       displ[0]=0;
       for(int i=1; i<n; ++i) displ[i]=displ[i-1]+counts[i-1];
@@ -274,7 +272,7 @@ void Atoms::share(const std::set<AtomNumber>& unique) {
 void Atoms::wait() {
   dataCanBeSet=false; // Everything should be set by this stage
 // How many double per atom should be scattered
-  int ndata=3;
+  std::size_t ndata=3;
   if(!massAndChargeOK)ndata=5;
 
   if(dd) {
@@ -288,7 +286,7 @@ void Atoms::wait() {
 // receive toBeReceived
     if(asyncSent) {
       Communicator::Status status;
-      int count=0;
+      std::size_t count=0;
       for(int i=0; i<dd.Get_size(); i++) {
         dd.Recv(&dd.indexToBeReceived[count],dd.indexToBeReceived.size()-count,i,666,status);
         int c=status.Get_count<int>();
@@ -442,6 +440,11 @@ void Atoms::updateUnits() {
 
 void Atoms::setTimeStep(void*p) {
   MD2double(p,timestep);
+// The following is to avoid extra digits in case the MD code uses floats
+// e.g.: float f=0.002 when converted to double becomes 0.002000000094995
+// To avoid this, we keep only up to 6 significant digits after first one
+  double magnitude=std::pow(10,std::floor(std::log10(timestep)));
+  timestep=std::floor(timestep/magnitude*1e6)/1e6*magnitude;
 }
 
 double Atoms::getTimeStep()const {

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -26,8 +26,6 @@
 
 namespace PLMD {
 namespace generic {
-
-using namespace std;
 
 //+PLUMEDOC GENERIC FLUSH
 /*
@@ -67,9 +65,9 @@ public:
     checkRead();
   }
   static void registerKeywords( Keywords& keys );
-  void calculate() {}
-  void apply() {}
-  void update() {
+  void calculate() override {}
+  void apply() override {}
+  void update() override {
     plumed.fflush();
     log.flush();
     const ActionSet & actionSet(plumed.getActionSet());

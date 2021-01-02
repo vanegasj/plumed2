@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -24,8 +24,6 @@
 #include "core/ActionRegister.h"
 #include "core/PlumedMain.h"
 #include "tools/Exception.h"
-
-using namespace std;
 
 namespace PLMD {
 namespace generic {
@@ -55,6 +53,8 @@ PRINT ARG=d
 \endplumedfile
 where the content of file pippo.dat is
 \plumedfile
+#SETTINGS FILENAME=pippo.dat
+# this is pippo.dat
 c1: COM ATOMS=1-100
 c2: COM ATOMS=101-202
 \endplumedfile
@@ -65,14 +65,16 @@ INCLUDE FILE=groups.dat
 c: COORDINATION GROUPA=groupa GROUPB=groupb R_0=0.5
 METAD ARG=c HEIGHT=0.2 PACE=100 SIGMA=0.2 BIASFACTOR=5
 \endplumedfile
-Here `groups.dat` could be huge file containing group definitions such as
+Here `groups.dat` could be a huge file containing group definitions.  This groups.dat file might look something
+like the following example but with more atom indices in the groups.
 \plumedfile
+#SETTINGS FILENAME=groups.dat
+# this is groups.dat
 groupa: GROUP ...
   ATOMS={
     10
     50
     60
-## imagine a long list here
     70
     80
     120
@@ -83,7 +85,6 @@ groupb: GROUP ...
     11
     51
     61
-## imagine a long list here
     71
     81
     121
@@ -97,6 +98,7 @@ Here different replicas might have different input files, but perhaps a large pa
 input is shared. This part can be put in a common included file. For instance you could have
 `common.dat`:
 \plumedfile
+#SETTINGS FILENAME=common.dat
 # this is common.dat
 t: TORSION ATOMS=1,2,3,4
 \endplumedfile
@@ -119,20 +121,22 @@ a file for reading it looks for a file with the replica suffix first.
 This is true also for files opened by INCLUDE!
 
 As an example, the same result of the inputs above could have been obtained using
-`plumed.dat`:
+the following `plumed.dat` file:
 \plumedfile
-# this is plumed.dat
+#SETTINGS NREPLICAS=2
 t: TORSION ATOMS=1,2,3,4
-INCLUDE FILE=other.dat
+INCLUDE FILE=other.inc
 \endplumedfile
-Then `other.0.dat`:
+Then `other.0.inc`:
 \plumedfile
-# this is other.0.dat
+#SETTINGS FILENAME=other.0.inc
+# this is other.0.inc
 RESTRAINT ARG=t AT=1.0 KAPPA=10
 \endplumedfile
-And `other.1.dat`:
+And `other.1.inc`:
 \plumedfile
-# this is other.1.dat
+#SETTINGS FILENAME=other.1.inc
+# this is other.1.inc
 RESTRAINT ARG=t AT=1.2 KAPPA=10
 \endplumedfile
 
@@ -149,8 +153,8 @@ class Include :
 public:
   static void registerKeywords( Keywords& keys );
   explicit Include(const ActionOptions&ao);
-  void calculate() {}
-  void apply() {}
+  void calculate() override {}
+  void apply() override {}
 };
 
 PLUMED_REGISTER_ACTION(Include,"INCLUDE")

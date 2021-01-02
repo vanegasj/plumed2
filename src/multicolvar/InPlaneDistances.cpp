@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2019 The plumed team
+   Copyright (c) 2015-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -29,8 +29,6 @@
 
 #include <string>
 #include <cmath>
-
-using namespace std;
 
 namespace PLMD {
 namespace multicolvar {
@@ -67,8 +65,8 @@ public:
   static void registerKeywords( Keywords& keys );
   explicit InPlaneDistances(const ActionOptions&);
 // active methods:
-  virtual double compute(const unsigned& tindex, AtomValuePack& myatoms ) const ;
-  bool isPeriodic() { return false; }
+  double compute(const unsigned& tindex, AtomValuePack& myatoms ) const override;
+  bool isPeriodic() override { return false; }
 };
 
 PLUMED_REGISTER_ACTION(InPlaneDistances,"INPLANEDISTANCES")
@@ -90,12 +88,12 @@ InPlaneDistances::InPlaneDistances(const ActionOptions&ao):
   // Read in the atoms
   std::vector<AtomNumber> all_atoms;
   readThreeGroups("GROUP","VECTORSTART","VECTOREND",false,false,all_atoms);
-
-  // Check atoms are OK
-  if( getFullNumberOfTasks()!=getNumberOfAtoms()-2 ) error("you should specify one atom for VECTORSTART and one atom for VECTOREND only");
+  setupMultiColvarBase( all_atoms );
 
   // Setup the multicolvar base
   setupMultiColvarBase( all_atoms ); readVesselKeywords();
+  // Check atoms are OK
+  if( getFullNumberOfTasks()!=getNumberOfAtoms()-2 ) error("you should specify one atom for VECTORSTART and one atom for VECTOREND only");
   // And check everything has been read in correctly
   checkRead();
 
@@ -107,7 +105,9 @@ InPlaneDistances::InPlaneDistances(const ActionOptions&ao):
       use_link=true; rcut=lt->getCutoff();
     } else {
       vesselbase::Between* bt=dynamic_cast<vesselbase::Between*>( getPntrToVessel(0) );
-      if( bt ) use_link=true; rcut=bt->getCutoff();
+      if( bt ) {
+        use_link=true; rcut=bt->getCutoff();
+      }
     }
     if( use_link ) {
       for(unsigned i=1; i<getNumberOfVessels(); ++i) {
@@ -132,7 +132,7 @@ double InPlaneDistances::compute( const unsigned& tindex, AtomValuePack& myatoms
   Vector normal=getSeparation( myatoms.getPosition(1), myatoms.getPosition(2) );
   Vector dir=getSeparation( myatoms.getPosition(1), myatoms.getPosition(0) );
   PLMD::Angle a; Vector ddij, ddik; double angle=a.compute(normal,dir,ddij,ddik);
-  double sangle=sin(angle), cangle=cos(angle);
+  double sangle=std::sin(angle), cangle=std::cos(angle);
   double dd=dir.modulo(), invdd=1.0/dd, val=dd*sangle;
 
   addAtomDerivatives( 1, 0, dd*cangle*ddik + sangle*invdd*dir, myatoms );

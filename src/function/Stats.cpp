@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2019 The plumed team
+   Copyright (c) 2015-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -21,8 +21,6 @@
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 #include "Function.h"
 #include "ActionRegister.h"
-
-using namespace std;
 
 namespace PLMD {
 namespace function {
@@ -64,7 +62,7 @@ class Stats :
   bool upperd;
 public:
   explicit Stats(const ActionOptions&);
-  void calculate();
+  void calculate() override;
   static void registerKeywords(Keywords& keys);
 };
 
@@ -73,7 +71,6 @@ PLUMED_REGISTER_ACTION(Stats,"STATS")
 
 void Stats::registerKeywords(Keywords& keys) {
   Function::registerKeywords(keys);
-  useCustomisableComponents(keys);
   keys.use("ARG");
   keys.add("optional","PARARG","the input for this action is the scalar output from one or more other actions without derivatives.");
   keys.add("optional","PARAMETERS","the parameters of the arguments in your function");
@@ -98,7 +95,7 @@ Stats::Stats(const ActionOptions&ao):
   if(parameters.size()!=static_cast<unsigned>(getNumberOfArguments())&&!parameters.empty())
     error("Size of PARAMETERS array should be either 0 or the same as of the number of arguments in ARG1");
 
-  vector<Value*> arg2;
+  std::vector<Value*> arg2;
   parseArgumentList("PARARG",arg2);
 
   if(!arg2.empty()) {
@@ -132,8 +129,8 @@ Stats::Stats(const ActionOptions&ao):
     if(components) {
       for(unsigned i=0; i<parameters.size(); i++) {
         std::string num; Tools::convert(i,num);
-        addComponentWithDerivatives("sqd_"+num);
-        componentIsNotPeriodic("sqd_"+num);
+        addComponentWithDerivatives("sqd-"+num);
+        componentIsNotPeriodic("sqd-"+num);
       }
     } else {
       addComponentWithDerivatives("sqdevsum");
@@ -149,7 +146,6 @@ Stats::Stats(const ActionOptions&ao):
     addComponentWithDerivatives("intercept");
     componentIsNotPeriodic("intercept");
   }
-
 
   checkRead();
 }
@@ -192,8 +188,8 @@ void Stats::calculate()
 
     const double num = ns*scxy - scx*scy;
     const double idev2x = 1./(ns*scx2-scx*scx);
-    const double idevx = sqrt(idev2x);
-    const double idevy = 1./sqrt(ns*scy2-scy*scy);
+    const double idevx = std::sqrt(idev2x);
+    const double idevy = 1./std::sqrt(ns*scy2-scy*scy);
 
     /* sd */
     const double nsqd = scx2 + scy2 - 2.*scxy;

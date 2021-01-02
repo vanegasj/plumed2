@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2017-2019 The plumed team
+   Copyright (c) 2017-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -23,8 +23,6 @@
 #include "core/ActionRegister.h"
 #include "core/PlumedMain.h"
 #include <string>
-
-using namespace std;
 
 namespace PLMD {
 namespace isdb {
@@ -67,8 +65,8 @@ class Selector:
 public:
   static void registerKeywords( Keywords& keys );
   explicit Selector(const ActionOptions&ao);
-  void calculate() {}
-  void apply() {}
+  void calculate() override {}
+  void apply() override {}
 };
 
 PLUMED_REGISTER_ACTION(Selector,"SELECTOR")
@@ -82,7 +80,7 @@ void Selector::registerKeywords( Keywords& keys ) {
 Selector::Selector(const ActionOptions&ao):
   Action(ao)
 {
-  string name;
+  std::string name;
   parse("NAME", name);
   double value;
   parse("VALUE", value);

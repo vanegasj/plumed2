@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2019 The plumed team
+   Copyright (c) 2015-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -29,13 +29,13 @@ namespace PLMD {
 template <class FCLASS>
 class ConjugateGradient : public MinimiseBase<FCLASS> {
 private:
-/// This is the pointer to the member funciton in the energy
+/// This is the pointer to the member function in the energy
 /// calculating class that calculates the energy
   typedef double(FCLASS::*engf_pointer)( const std::vector<double>& p, std::vector<double>& der );
   const unsigned ITMAX;
   const double EPS;
 public:
-  ConjugateGradient( FCLASS* funcc ) : MinimiseBase<FCLASS>(funcc), ITMAX(200), EPS(1E-10) {}
+  explicit ConjugateGradient( FCLASS* funcc ) : MinimiseBase<FCLASS>(funcc), ITMAX(200), EPS(1E-10) {}
   void minimise( const double& ftol, std::vector<double>& p, engf_pointer myfunc );
 };
 
@@ -49,7 +49,7 @@ void ConjugateGradient<FCLASS>::minimise( const double& ftol, std::vector<double
     double fret=this->linemin( xi, p, myfunc );
     // The exit condition
     if( 2.0*fabs(fret-fp) <= ftol*(fabs(fret)+fabs(fp)+EPS)) { return; }
-    fp = fret; double igeng = this->calcDerivatives( p, xi, myfunc );
+    fp = fret; this->calcDerivatives( p, xi, myfunc );
     double ddg=0., gg=0.;
     for(unsigned j=0; j<p.size(); ++j) { gg += g[j]*g[j]; ddg += (xi[j]+g[j])*xi[j]; }
 

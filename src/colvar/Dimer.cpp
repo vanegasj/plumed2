@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2017-2019 The plumed team
+   Copyright (c) 2017-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -19,19 +19,9 @@
    You should have received a copy of the GNU Lesser General Public License
    along with plumed.  If not, see <http://www.gnu.org/licenses/>.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-
-
 #include "Colvar.h"
 #include "ActionRegister.h"
 #include "core/PlumedMain.h"
-
-#include <string>
-#include <cmath>
-#include <cassert>
-#include <iostream>
-#include <vector>
-
-using namespace std;
 
 namespace PLMD {
 namespace colvar {
@@ -113,6 +103,7 @@ like in the previous examples, and each replica will read its own DSIGMA value. 
 a unique plumed.dat is given, DSIGMA has to be a list containing a value for each replica.
 For 4 replicas:
 \plumedfile
+#SETTINGS NREPLICAS=4
 dim: DIMER TEMP=300 Q=0.5 ATOMS1=1,5,7 ATOMS2=23,27,29 DSIGMA=0.002,0.002,0.004,0.01
 \endplumedfile
 
@@ -136,16 +127,16 @@ class Dimer : public Colvar {
 public:
   static void registerKeywords( Keywords& keys);
   explicit Dimer(const ActionOptions&);
-  virtual void calculate();
+  void calculate() override;
 protected:
   bool trimer,useall;
   int myrank, nranks;
   double qexp,temperature,beta,dsigma;
-  vector<double> dsigmas;
+  std::vector<double> dsigmas;
 private:
   void consistencyCheck();
-  vector<AtomNumber> usedatoms1;
-  vector<AtomNumber> usedatoms2;
+  std::vector<AtomNumber> usedatoms1;
+  std::vector<AtomNumber> usedatoms2;
 
 };
 
@@ -178,7 +169,7 @@ Dimer::Dimer(const ActionOptions& ao):
   parse("TEMP",temperature);
 
 
-  vector<AtomNumber> atoms;
+  std::vector<AtomNumber> atoms;
   parseFlag("ALLATOMS",useall);
   trimer=true;
   bool notrim;
@@ -247,10 +238,10 @@ void Dimer::calculate()
 {
   double cv_val=0;
   Tensor virial;
-  vector<Vector> derivatives;
-  vector<Vector> my_pos=getPositions();
+  std::vector<Vector> derivatives;
+  std::vector<Vector> my_pos=getPositions();
   int atms = my_pos.size();
-  vector<Vector> der_b2;
+  std::vector<Vector> der_b2;
   for(int i=0; i<atms/2; i++)
   {
     Vector dist;
@@ -261,7 +252,7 @@ void Dimer::calculate()
 
     double dsigquad = dsigma*dsigma;
     double fac1 = 1.0 + distquad/(2*qexp*dsigquad);
-    double fac1qm1 = pow(fac1,qexp-1);
+    double fac1qm1 = std::pow(fac1,qexp-1);
 
 
     cv_val += (fac1*fac1qm1-1.0)/beta;

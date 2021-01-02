@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -575,6 +575,27 @@ void Keywords::printKeyword( const std::string& key, Log& log ) const {
   log.printf("\n");
 }
 
+std::string Keywords::getTooltip( const std::string& name ) const {
+  std::size_t dd=name.find_first_of("0123456789"); std::string kname=name.substr(0,dd);
+  if( !exists(kname) ) return "<b> could not find this keyword </b>";
+  std::string mystring, docstr = documentation.find(kname)->second;
+  if( types.find(kname)->second.isCompulsory() ) {
+    mystring += "<b>compulsory keyword ";
+    if( docstr.find("default")!=std::string::npos ) {
+      std::size_t bra = docstr.find_first_of(")"); mystring += docstr.substr(0,bra+1); docstr = docstr.substr(bra+1);
+    }
+    mystring += "</b>\n";
+  }
+  std::vector<std::string> w=Tools::getWords( docstr ); unsigned nl=0;
+  for(unsigned i=0; i<w.size(); ++i) {
+    nl+=w[i].length() + 1;
+    if( nl>80 ) { mystring += w[i] + "\n"; nl=0; }
+    else { mystring += w[i] + " "; }
+    if( w[i].find(".")!=std::string::npos ) break; // Only write up the the first dot
+  }
+  return mystring;
+}
+
 void Keywords::print_html_item( const std::string& key ) const {
   printf("<tr>\n");
   printf("<td width=15%%> <b> %s </b></td>\n",key.c_str() );
@@ -631,20 +652,47 @@ void Keywords::addOutputComponent( const std::string& name, const std::string& k
 }
 
 bool Keywords::outputComponentExists( const std::string& name, const bool& custom ) const {
-  if( custom && cstring.find("customizable")!=std::string::npos ) return true;
+  if( custom && cstring.find("customize")!=std::string::npos ) return true;
 
-  std::string sname; std::size_t num=name.find_first_of("-");
-  if( num!=std::string::npos ) sname=name.substr(0,num);
-  else {
-    std::size_t num2=name.find_first_of("_");
-    if( num2!=std::string::npos ) sname=name.substr(num2);
-    else sname=name;
-  }
+  std::string sname;
+  std::size_t num=name.find_first_of("-");
+  std::size_t num2=name.find_last_of("_");
+
+  if( num2!=std::string::npos ) sname=name.substr(num2);
+  else if( num!=std::string::npos ) sname=name.substr(0,num);
+  else sname=name;
 
   for(unsigned i=0; i<cnames.size(); ++i) {
     if( sname==cnames[i] ) return true;
   }
   return false;
+}
+
+std::string Keywords::getOutputComponentDescription( const std::string& name ) const {
+  if( cstring.find("customized")!=std::string::npos ) return "the label of this action is set by user in the input. See documentation above.";
+
+  bool found=false;
+  for(unsigned i=0; i<cnames.size(); ++i) {
+    if( name==cnames[i] ) found=true;
+  }
+  if( !found ) plumed_merror("could not find output component named " + name );
+  return cdocs.find(name)->second;
+}
+
+void Keywords::removeComponent( const std::string& name ) {
+  bool found=false;
+
+  while(true) {
+    unsigned j;
+    for(j=0; j<cnames.size(); j++) if(cnames[j]==name)break;
+    if(j<cnames.size()) {
+      cnames.erase(cnames.begin()+j);
+      found=true;
+    } else break;
+  }
+  // Delete documentation, type and so on from the description
+  cdocs.erase(name); ckey.erase(name);
+  plumed_massert(found,"You are trying to remove " + name + " a component that isn't there");
 }
 
 }

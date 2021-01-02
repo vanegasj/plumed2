@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2017-2019 The plumed team
+   Copyright (c) 2017-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -51,7 +51,7 @@ that are specified in the DENSITY action that are within a region where the dens
 \plumedfile
 d1: DENSITY SPECIES=14401-74134:3 LOWMEM
 fi: INENVELOPE DATA=d1 ATOMS=1-14400 CONTOUR={RATIONAL D_0=2.0 R_0=1.0} BANDWIDTH=0.1,0.1,0.1 LOWMEM
-PRINT ARG=fi,rr.* FILE=colvar
+PRINT ARG=fi FILE=colvar
 \endplumedfile
 
 */
@@ -71,8 +71,8 @@ private:
 public:
   static void registerKeywords( Keywords& keys );
   explicit VolumeInEnvelope(const ActionOptions& ao);
-  void setupRegions();
-  double calculateNumberInside( const Vector& cpos, Vector& derivatives, Tensor& vir, std::vector<Vector>& refders ) const ;
+  void setupRegions() override;
+  double calculateNumberInside( const Vector& cpos, Vector& derivatives, Tensor& vir, std::vector<Vector>& refders ) const override;
 };
 
 PLUMED_REGISTER_ACTION(VolumeInEnvelope,"INENVELOPE")
@@ -103,8 +103,8 @@ VolumeInEnvelope::VolumeInEnvelope(const ActionOptions& ao):
 
   std::vector<double> pp(3,0.0), bandwidth(3); parseVector("BANDWIDTH",bandwidth);
   log.printf("  using %s kernel with bandwidths %f %f %f \n",getKernelType().c_str(),bandwidth[0],bandwidth[1],bandwidth[2] );
-  kernel.reset( new KernelFunctions( pp, bandwidth, getKernelType(), "DIAGONAL", 1.0 ) );
-  for(unsigned i=0; i<3; ++i) { pos.emplace_back(new Value()); pos[i]->setNotPeriodic(); }
+  kernel=Tools::make_unique<KernelFunctions>( pp, bandwidth, getKernelType(), "DIAGONAL", 1.0 );
+  for(unsigned i=0; i<3; ++i) { pos.emplace_back(Tools::make_unique<Value>()); pos[i]->setNotPeriodic(); }
   std::vector<double> csupport( kernel->getContinuousSupport() );
   double maxs = csupport[0];
   for(unsigned i=1; i<csupport.size(); ++i) {

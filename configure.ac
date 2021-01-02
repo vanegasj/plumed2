@@ -251,7 +251,7 @@ PLUMED_CONFIG_ENABLE([external-blas],[search for external blas],[yes])
 PLUMED_CONFIG_ENABLE([molfile-plugins],[use molfile_plugins],[yes])
 PLUMED_CONFIG_ENABLE([external-molfile-plugins],[search for external molfile_plugins],[yes])
 PLUMED_CONFIG_ENABLE([zlib],[search for zlib],[yes])
-PLUMED_CONFIG_ENABLE([readdir-r],[search for readdir_r (threadsafe)],[yes])
+PLUMED_CONFIG_ENABLE([readdir-r],[search for readdir_r (threadsafe)],[no])
 PLUMED_CONFIG_ENABLE([cregex],[search for C regular expression],[yes])
 PLUMED_CONFIG_ENABLE([dlopen],[search for dlopen],[yes])
 PLUMED_CONFIG_ENABLE([rtld_default],[search for RTLD_DEFAULT macro],[yes])
@@ -263,11 +263,11 @@ PLUMED_CONFIG_ENABLE([gsl],[search for gsl],[yes])
 PLUMED_CONFIG_ENABLE([xdrfile],[search for xdrfile],[yes])
 PLUMED_CONFIG_ENABLE([boost_graph],[search for boost graph],[no])
 PLUMED_CONFIG_ENABLE([boost_serialization],[search for boost serialization],[no])
-PLUMED_CONFIG_ENABLE([fftw],[search for fftw],[no])
+PLUMED_CONFIG_ENABLE([fftw],[search for fftw],[yes])
 PLUMED_CONFIG_ENABLE([python],[search for python],[yes])
-PLUMED_CONFIG_ENABLE([af_ocl],[arrayfire_opencl],[search for arrayfire],[no])
-PLUMED_CONFIG_ENABLE([af_cuda],[arrayfire_cuda],[search for arrayfire],[no])
-PLUMED_CONFIG_ENABLE([af_cpu],[arrayfire_cpu],[search for arrayfire],[no])
+PLUMED_CONFIG_ENABLE([af_ocl],[search for arrayfire_ocl],[no])
+PLUMED_CONFIG_ENABLE([af_cuda],[search for arrayfire_cuda],[no])
+PLUMED_CONFIG_ENABLE([af_cpu],[search for arrayfire_cpu],[no])
 
 AC_ARG_VAR(SOEXT,[extension of dynamic libraries (so/dylib)])
 AC_ARG_VAR(STATIC_LIBS,[variables that should be linked statically directly to MD code - configure will add here -ldl if necessary ])
@@ -803,7 +803,7 @@ if test $python == true  ; then
   if test -n "$PYTHON_BIN"
   then
     AC_MSG_NOTICE([Python executable is $PYTHON_BIN])
-    AC_MSG_CHECKING([support for required python modules (setuptools, cython, subprocess, os, shutil)])
+    AC_MSG_CHECKING([support for required python modules (python3, setuptools, cython, subprocess, os, shutil)])
 testimport="
 from setuptools import setup
 from setuptools import Extension
@@ -813,6 +813,8 @@ import os.path
 import sys
 from shutil import copyfile
 from Cython.Build import cythonize
+if sys.version_info < (3,):
+    raise ImportError('PLUMED 2.6 only supports Python 3')
 "
     if echo "$testimport" | "$PYTHON_BIN" 1>/dev/null 2>/dev/null;  then
        AC_MSG_RESULT([yes])
@@ -843,10 +845,14 @@ if test "$debug" == false ; then
   AC_DEFINE([NDEBUG])
 fi
 
+AC_SUBST(use_debug_glibcxx)
 # in debug-glibcxx mode, add -D_GLIBCXX_DEBUG
+# also take note that we are using this to relax `make nmcheck`
+use_debug_glibcxx=no
 if test "$debug_glibcxx" == true ; then
   AC_MSG_NOTICE([Check boundaries, adding -D_GLIBCXX_DEBUG])
   AC_DEFINE([_GLIBCXX_DEBUG])
+  use_debug_glibcxx=yes
 fi
 
 # this is necessary in many MPI implementations

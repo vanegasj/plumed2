@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2016-2019 The plumed team
+   Copyright (c) 2016-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -64,12 +64,12 @@ LABEL=m1
 SMAC_MATRIX ...
    ATOMS=m1 SWITCH={RATIONAL D_0=5.99 R_0=0.1 D_MAX=6.0}
    KERNEL1={TRIANGULAR CENTER=0 SIGMA=1.0} KERNEL2={TRIANGULAR CENTER=pi SIGMA=0.6}
-   LABEL=smacm
+   LABEL=smac
 ... SMAC_MATRIX
 
-dfs1: DFSCLUSTERING MATRIX=smacm
+dfs1: DFSCLUSTERING MATRIX=smac
 cc2: CLUSTER_NATOMS CLUSTERS=dfs1 CLUSTER=1
-PRINT ARG=smac.*,cc1.*,cc2 FILE=colvar
+PRINT ARG=cc2 FILE=colvar
 \endplumedfile
 
 */
@@ -86,10 +86,10 @@ public:
   static void registerKeywords( Keywords& keys );
   ///
   explicit SMACMatrix(const ActionOptions&);
-  void readOrientationConnector( const unsigned& i, const unsigned& j, const std::vector<std::string>& desc );
+  void readOrientationConnector( const unsigned& i, const unsigned& j, const std::vector<std::string>& desc ) override;
   double computeVectorFunction( const unsigned& iv, const unsigned& jv,
                                 const Vector& conn, const std::vector<double>& vec1, const std::vector<double>& vec2,
-                                Vector& dconn, std::vector<double>& dvec1, std::vector<double>& dvec2 ) const ;
+                                Vector& dconn, std::vector<double>& dvec1, std::vector<double>& dvec2 ) const override;
 };
 
 PLUMED_REGISTER_ACTION(SMACMatrix,"SMAC_MATRIX")
@@ -123,7 +123,7 @@ double SMACMatrix::computeVectorFunction( const unsigned& iv, const unsigned& jv
   unsigned nvectors = ( vec1.size() - 2 ) / 3; plumed_assert( (vec1.size()-2)%3==0 );
   std::vector<Vector> dv1(nvectors), dv2(nvectors), tdconn(nvectors); Torsion t; std::vector<Vector> v1(nvectors), v2(nvectors);
   std::vector<std::unique_ptr<Value>> pos;
-  for(unsigned i=0; i<nvectors; ++i) { pos.emplace_back( new Value() ); pos[i]->setDomain( "-pi", "pi" ); }
+  for(unsigned i=0; i<nvectors; ++i) { pos.emplace_back( Tools::make_unique<Value>() ); pos[i]->setDomain( "-pi", "pi" ); }
 
   for(unsigned j=0; j<nvectors; ++j) {
     for(unsigned k=0; k<3; ++k) {

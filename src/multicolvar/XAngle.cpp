@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2016-2019 The plumed team
+   Copyright (c) 2016-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -27,8 +27,6 @@
 
 #include <string>
 #include <cmath>
-
-using namespace std;
 
 namespace PLMD {
 namespace multicolvar {
@@ -92,10 +90,10 @@ public:
   static void registerKeywords( Keywords& keys );
   explicit XAngles(const ActionOptions&);
 // active methods:
-  virtual double compute( const unsigned& tindex, AtomValuePack& myatoms ) const ;
-  double calculateWeight( const unsigned& taskCode, const double& weight, AtomValuePack& ) const ;
+  double compute( const unsigned& tindex, AtomValuePack& myatoms ) const override;
+  double calculateWeight( const unsigned& taskCode, const double& weight, AtomValuePack& ) const override;
 /// Returns the number of coordinates of the field
-  bool isPeriodic() { return false; }
+  bool isPeriodic() override { return false; }
 };
 
 PLUMED_REGISTER_ACTION(XAngles,"XANGLES")

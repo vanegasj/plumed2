@@ -35,16 +35,8 @@ Uniform target distribution (static).
 Using this keyword you can define a uniform target distribution which is a
 product of one-dimensional distributions \f$p_{k}(s_{k})\f$ that are uniform
 over a given interval \f$[a_{k},b_{k}]\f$
-\f[
-p_{k}(s_{k}) =
-\begin{cases}
-\frac{1}{(b_{k}-a_{k})}
-& \mathrm{if} \ a_{k} \leq s_{k} \leq b_{k} \\
-\\
-\ 0
-& \mathrm{otherwise}
-\end{cases}
-\f]
+
+MISSING EQUATION TO BE FIXED
 
 The overall distribution is then given as
 \f[
@@ -107,20 +99,29 @@ the code should automatically detect the limits not given.
 Therefore, if we consider a target distribution that is
 defined over an interval from 0.0 to 10.0 for the first
 argument and from 0.2 to 1.0 for the second argument are
-all of the following examples equivalent
+the following example
 \plumedfile
 td: TD_UNIFORM
 \endplumedfile
+
+is equivalent to this one
+
 \plumedfile
 TD_UNIFORM ...
- MINIMA=0.0,0,2
+ MINIMA=0.0,0.2
  MAXIMA=10.0,1.0
  LABEL=td
  ... TD_UNIFORM
 \endplumedfile
+
+and this one
+
 \plumedfile
 td: TD_UNIFORM  MAXIMA=10.0,1.0
 \endplumedfile
+
+and also this one
+
 \plumedfile
 td: TD_UNIFORM MINIMA=0.0,0,2
 \endplumedfile
@@ -175,11 +176,11 @@ class TD_Uniform : public TargetDistribution {
   std::vector<double> sigma_min_;
   std::vector<double> sigma_max_;
   double GaussianSwitchingFunc(const double, const double, const double) const;
-  void setupAdditionalGrids(const std::vector<Value*>&, const std::vector<std::string>&, const std::vector<std::string>&, const std::vector<unsigned int>&);
+  void setupAdditionalGrids(const std::vector<Value*>&, const std::vector<std::string>&, const std::vector<std::string>&, const std::vector<unsigned int>&) override;
 public:
   static void registerKeywords( Keywords&);
   explicit TD_Uniform(const ActionOptions& ao);
-  double getValue(const std::vector<double>&) const;
+  double getValue(const std::vector<double>&) const override;
 };
 
 
@@ -188,10 +189,10 @@ PLUMED_REGISTER_ACTION(TD_Uniform,"TD_UNIFORM")
 
 void TD_Uniform::registerKeywords(Keywords& keys) {
   TargetDistribution::registerKeywords(keys);
-  keys.add("optional","MINIMA","The minima of the intervals where the target distribution is taken as uniform. You should give one value for each argument.");
-  keys.add("optional","MAXIMA","The maxima of the intervals where the target distribution is taken as uniform. You should give one value for each argument.");
+  keys.add("optional","MINIMA","The minimum of the intervals where the target distribution is taken as uniform. You should give one value for each argument.");
+  keys.add("optional","MAXIMA","The maximum of the intervals where the target distribution is taken as uniform. You should give one value for each argument.");
   keys.add("optional","SIGMA_MINIMA","The standard deviation parameters of the Gaussian switching functions for the minima of the intervals. You should give one value for each argument. Value of 0.0 means that switch is done without a smooth switching function, this is the default behavior.");
-  keys.add("optional","SIGMA_MAXIMA","The standard deviation parameters of the Gaussian switching functions for the maxima of the intervals. You should give one value for each argument. Value of 0.0 means that switch is done without a smooth switching function, this is the default behavior.");
+  keys.add("optional","SIGMA_MAXIMA","The standard deviation parameters of the Gaussian switching functions for the maximum of the intervals. You should give one value for each argument. Value of 0.0 means that switch is done without a smooth switching function, this is the default behavior.");
 }
 
 

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2011-2019 The plumed team
+   Copyright (c) 2011-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -43,6 +43,7 @@
 #include "lepton/Exception.h"
 #include "DataFetchingObject.h"
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 #include <set>
 #include <unordered_map>
@@ -58,8 +59,6 @@
 #include <functional>
 #endif
 
-
-using namespace std;
 
 namespace PLMD {
 
@@ -346,13 +345,18 @@ void PlumedMain::cmd(const std::string & word,void*val) {
         CHECK_NOTNULL(val,word);
         readInputLine(static_cast<char*>(val));
         break;
+      case cmd_readInputLines:
+        CHECK_INIT(initialized,word);
+        CHECK_NOTNULL(val,word);
+        readInputLines(static_cast<char*>(val));
+        break;
       case cmd_clear:
         CHECK_INIT(initialized,word);
         actionSet.clearDelete();
         break;
       case cmd_getApiVersion:
         CHECK_NOTNULL(val,word);
-        *(static_cast<int*>(val))=6;
+        *(static_cast<int*>(val))=8;
         break;
       // commands which can be used only before initialization:
       case cmd_init:
@@ -536,7 +540,7 @@ void PlumedMain::cmd(const std::string & word,void*val) {
         atoms.setExtraCVForce(words[1],val);
         break;
       case cmd_GREX:
-        if(!grex) grex.reset(new GREX(*this));
+        if(!grex) grex=Tools::make_unique<GREX>(*this);
         plumed_massert(grex,"error allocating grex");
         {
           std::string kk=words[1];
@@ -546,13 +550,21 @@ void PlumedMain::cmd(const std::string & word,void*val) {
         break;
       case cmd_CLTool:
         CHECK_NOTINIT(initialized,word);
-        if(!cltool) cltool.reset(new CLToolMain);
+        if(!cltool) cltool=Tools::make_unique<CLToolMain>();
         {
           std::string kk=words[1];
           for(unsigned i=2; i<words.size(); i++) kk+=" "+words[i];
           cltool->cmd(kk.c_str(),val);
         }
         break;
+      /* ADDED WITH API==7 */
+      case cmd_convert:
+      {
+        double v;
+        plumed_assert(words.size()==2);
+        if(Tools::convert(words[1],v)) atoms.double2MD(v,val);
+      }
+      break;
       default:
         plumed_merror("cannot interpret cmd(\"" + word + "\"). check plumed developers manual to see the available commands.");
         break;
@@ -580,7 +592,8 @@ void PlumedMain::init() {
   log<<"PLUMED is starting\n";
   log<<"Version: "<<config::getVersionLong()<<" (git: "<<config::getVersionGit()<<") "
      <<"compiled on " <<config::getCompilationDate() << " at " << config::getCompilationTime() << "\n";
-  log<<"Please cite this paper when using PLUMED ";
+  log<<"Please cite these papers when using PLUMED ";
+  log<<cite("The PLUMED consortium, Nat. Methods 16, 670 (2019)");
   log<<cite("Tribello, Bonomi, Branduardi, Camilloni, and Bussi, Comput. Phys. Commun. 185, 604 (2014)");
   log<<"\n";
   log<<"For further information see the PLUMED web page at http://www.plumed.org\n";
@@ -641,6 +654,36 @@ void PlumedMain::readInputLine(const std::string & str) {
   }
 }
 
+void PlumedMain::readInputLines(const std::string & str) {
+  plumed_assert(initialized);
+  if(str.empty()) return;
+  char tmpname[L_tmpnam];
+  // Generate temporary name
+  // Although tmpnam generates a warning as a deprecated function, it is part of the C++ standard
+  // so it should be ok.
+  {
+    auto ret=std::tmpnam(tmpname);
+    plumed_assert(ret);
+  }
+  // write buffer
+  {
+    FILE* fp=std::fopen(tmpname,"w");
+    plumed_assert(fp);
+    // make sure file is closed also if an exception occurs
+    auto deleter=[](FILE* fp) { std::fclose(fp); };
+    std::unique_ptr<FILE,decltype(deleter)> fp_deleter(fp,deleter);
+    auto ret=std::fputs(str.c_str(),fp);
+    plumed_assert(ret!=EOF);
+  }
+  // read file
+  {
+    // make sure file is deleted also if an exception occurs
+    auto deleter=[](const char* name) { std::remove(name); };
+    std::unique_ptr<char,decltype(deleter)> file_deleter(&tmpname[0],deleter);
+    readInputFile(tmpname);
+  }
+}
+
 void PlumedMain::readInputWords(const std::vector<std::string> & words) {
   plumed_assert(initialized);
   if(words.empty())return;
@@ -659,7 +702,7 @@ void PlumedMain::readInputWords(const std::vector<std::string> & words) {
       log << msg;
       log.flush();
       plumed_merror(msg);
-    };
+    }
     action->checkRead();
     actionSet.emplace_back(std::move(action));
   };
@@ -892,22 +935,22 @@ void PlumedMain::load(const std::string& ss) {
       log<<"Executing: "<<cmd;
       if(comm.Get_size()>0) log<<" (only on master node)";
       log<<"\n";
-      if(comm.Get_rank()==0) system(cmd.c_str());
+      if(comm.Get_rank()==0) {
+        int ret=system(cmd.c_str());
+        if(ret!=0) plumed_error() <<"An error happened while executing command "<<cmd<<"\n";
+      }
       comm.Barrier();
       base="./"+base;
     }
     s=base+"."+config::getSoExt();
     void *p=dlloader.load(s);
     if(!p) {
-      const std::string error_msg="I cannot load library " + ss + " " + dlloader.error();
-      log<<"ERROR\n";
-      log<<error_msg<<"\n";
-      plumed_merror(error_msg);
+      plumed_error()<<"I cannot load library " << ss << " " << dlloader.error();
     }
     log<<"Loading shared library "<<s.c_str()<<"\n";
     log<<"Here is the new list of available actions\n";
     log<<actionRegister();
-  } else plumed_merror("loading not enabled, please recompile with -D__PLUMED_HAS_DLOPEN");
+  } else plumed_error()<<"While loading library "<< ss << " loading was not enabled, please check if dlopen was found at configure time";
 }
 
 double PlumedMain::getBias() const {

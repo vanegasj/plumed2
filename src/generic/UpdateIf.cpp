@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2015-2019 The plumed team
+   Copyright (c) 2015-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -23,8 +23,6 @@
 #include "core/ActionWithArguments.h"
 #include "core/ActionRegister.h"
 #include "core/PlumedMain.h"
-
-using namespace std;
 
 namespace PLMD {
 namespace generic {
@@ -87,12 +85,12 @@ class UpdateIf:
   bool on;
   bool end;
 public:
-  void prepare();
-  void calculate();
-  void beforeUpdate();
+  void prepare() override;
+  void calculate() override;
+  void beforeUpdate() override;
   explicit UpdateIf(const ActionOptions&);
   static void registerKeywords(Keywords& keys);
-  void apply() {}
+  void apply() override {}
   ~UpdateIf();
 };
 

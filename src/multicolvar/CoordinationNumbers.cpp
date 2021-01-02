@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -28,8 +28,6 @@
 #include <string>
 #include <cmath>
 
-using namespace std;
-
 namespace PLMD {
 namespace multicolvar {
 
@@ -38,7 +36,7 @@ namespace multicolvar {
 Calculate the coordination numbers of atoms so that you can then calculate functions of the distribution of
  coordination numbers such as the minimum, the number less than a certain quantity and so on.
 
-To make the calculation of coordination numbers differentiable the following function is used:
+So that the calculated coordination numbers have continuous derivatives the following function is used:
 
 \f[
 s = \frac{ 1 - \left(\frac{r-d_0}{r_0}\right)^n } { 1 - \left(\frac{r-d_0}{r_0}\right)^m }
@@ -89,9 +87,9 @@ public:
   static void registerKeywords( Keywords& keys );
   explicit CoordinationNumbers(const ActionOptions&);
 // active methods:
-  virtual double compute( const unsigned& tindex, AtomValuePack& myatoms ) const ;
+  double compute( const unsigned& tindex, AtomValuePack& myatoms ) const override;
 /// Returns the number of coordinates of the field
-  bool isPeriodic() { return false; }
+  bool isPeriodic() override { return false; }
 };
 
 PLUMED_REGISTER_ACTION(CoordinationNumbers,"COORDINATIONNUMBER")
@@ -142,7 +140,7 @@ CoordinationNumbers::CoordinationNumbers(const ActionOptions&ao):
   parse("R_POWER", r_power);
   if(r_power > 0) {
     log.printf("  Multiplying switching function by r^%d\n", r_power);
-    double offset = switchingFunction.calculate(rcut*0.9999, rcut2) * pow(rcut*0.9999, r_power);
+    double offset = switchingFunction.calculate(rcut*0.9999, rcut2) * std::pow(rcut*0.9999, r_power);
     log.printf("  You will have a discontinuous jump of %f to 0 near the cutoff of your switching function. "
                "Consider setting D_MAX or reducing R_POWER if this is large\n", offset);
   }
@@ -168,7 +166,7 @@ double CoordinationNumbers::compute( const unsigned& tindex, AtomValuePack& myat
 
       sw = switchingFunction.calculateSqr( d2, dfunc );
       if(r_power > 0) {
-        d = sqrt(d2); raised = pow( d, r_power - 1 );
+        d = std::sqrt(d2); raised = std::pow( d, r_power - 1 );
         accumulateSymmetryFunction( 1, i, sw * raised * d,
                                     (dfunc * d * raised + sw * r_power * raised / d) * distance,
                                     (-dfunc * d * raised - sw * r_power * raised / d) * Tensor(distance, distance),

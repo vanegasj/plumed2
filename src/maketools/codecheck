@@ -22,9 +22,9 @@ done
 
 if [ $do_plumedcheck == true ] ; then
   if [ $do_local == true ] ; then
-    ../maketools/plumedcheck *.{h,cpp} ../../configure.ac --astyle=../../astyle/astyle --astyle-options=../../.astyle.options
+    ../maketools/plumedcheck $(ls -1 *.{h,cpp}) ../../configure.ac --astyle=../../astyle/astyle --astyle-options=../../.astyle.options
   else
-    maketools/plumedcheck --global-check */*.{h,cpp} ../configure.ac --astyle=../astyle/astyle --astyle-options=../.astyle.options
+    maketools/plumedcheck --global-check $(ls -1 */*.{h,cpp}) ../configure.ac --astyle=../astyle/astyle --astyle-options=../.astyle.options
   fi
 fi
 
@@ -38,6 +38,7 @@ if [ $do_cppcheck == true ] ; then
   -U__GNUG__ -U__PLUMED_HAS_EXTERNAL_LAPACK -U__PLUMED_HAS_EXTERNAL_BLAS \
   -UGMX_CYGWIN  -UF77_NO_UNDERSCORE -U_GLIBCXX_DEBUG -DNDEBUG -U__PLUMED_PBC_WHILE  \
   -U__PLUMED_HAS_ASMJIT \
+  -D__PLUMED_WRAPPER_CXX_EXPLICIT=explicit \
   --template='[{file}:{line}] ({severity}) :{id}: {message}' --enable=all --inline-suppr --force \
   $files
 fi

@@ -1,5 +1,5 @@
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   Copyright (c) 2012-2019 The plumed team
+   Copyright (c) 2012-2020 The plumed team
    (see the PEOPLE file at the root of the distribution for a list of names)
 
    See http://www.plumed.org for more information.
@@ -59,6 +59,19 @@ rphi2:       READ FILE=input_colvar.data  VALUES=phi2
 PRINT ARG=rphi1,rphi2 STRIDE=500  FILE=output_colvar.data
 \endplumedfile
 
+The file input_colvar.data is just a normal colvar file as shown below
+
+\auxfile{input_colvar.data}
+#! FIELDS time phi psi metad.bias metad.rbias metad.rct
+#! SET min_phi -pi
+#! SET max_phi pi
+#! SET min_psi -pi
+#! SET max_psi pi
+ 0.000000  -1.2379   0.8942   0.0000   0.0000   0.0000
+ 1.000000  -1.4839   1.0482   0.0000   0.0000   0.0089
+ 2.000000  -1.3243   0.6055   0.0753   0.0664   0.0184
+\endauxfile
+
 */
 //+ENDPLUMEDOC
 
@@ -82,14 +95,14 @@ private:
 public:
   static void registerKeywords( Keywords& keys );
   explicit Read(const ActionOptions&);
-  void prepare();
-  void apply() {}
-  void calculate();
-  void update();
+  void prepare() override;
+  void apply() override {}
+  void calculate() override;
+  void update() override;
   std::string getFilename() const;
   IFile* getFile();
-  unsigned getNumberOfDerivatives();
-  void turnOnDerivatives();
+  unsigned getNumberOfDerivatives() override;
+  void turnOnDerivatives() override;
 };
 
 PLUMED_REGISTER_ACTION(Read,"READ")
@@ -136,7 +149,7 @@ Read::Read(const ActionOptions&ao):
     }
   }
   if( !cloned_file ) {
-    ifile_ptr.reset(new IFile());
+    ifile_ptr=Tools::make_unique<IFile>();
     ifile=ifile_ptr.get();
     if( !ifile->FileExist(filename) ) error("could not find file named " + filename);
     ifile->link(*this);
@@ -149,6 +162,8 @@ Read::Read(const ActionOptions&ao):
   // Find out what we are reading
   std::vector<std::string> valread; parseVector("VALUES",valread);
 
+  if(nlinesPerStep>1 && cloned_file) error("Opening a file multiple times and using EVERY is not allowed");
+
   std::size_t dot=valread[0].find_first_of('.');
   if( valread[0].find(".")!=std::string::npos ) {
     std::string label=valread[0].substr(0,dot);
@@ -159,25 +174,25 @@ Read::Read(const ActionOptions&ao):
       ifile->scanFieldList( fieldnames );
       for(unsigned i=0; i<fieldnames.size(); ++i) {
         if( fieldnames[i].substr(0,dot)==label ) {
-          readvals.emplace_back(new Value(this, fieldnames[i], false) ); addComponentWithDerivatives( fieldnames[i].substr(dot+1) );
+          readvals.emplace_back(Tools::make_unique<Value>(this, fieldnames[i], false) ); addComponentWithDerivatives( fieldnames[i].substr(dot+1) );
           if( ifile->FieldExist("min_" + fieldnames[i]) ) componentIsPeriodic( fieldnames[i].substr(dot+1), "-pi","pi" );
           else componentIsNotPeriodic( fieldnames[i].substr(dot+1) );
         }
       }
     } else {
-      readvals.emplace_back(new Value(this, valread[0], false) ); addComponentWithDerivatives( name );
+      readvals.emplace_back(Tools::make_unique<Value>(this, valread[0], false) ); addComponentWithDerivatives( name );
       if( ifile->FieldExist("min_" + valread[0]) ) componentIsPeriodic( valread[0].substr(dot+1), "-pi", "pi" );
       else componentIsNotPeriodic( valread[0].substr(dot+1) );
       for(unsigned i=1; i<valread.size(); ++i) {
         if( valread[i].substr(0,dot)!=label ) error("all values must be from the same Action when using READ");;
-        readvals.emplace_back(new Value(this, valread[i], false) ); addComponentWithDerivatives( valread[i].substr(dot+1) );
+        readvals.emplace_back(Tools::make_unique<Value>(this, valread[i], false) ); addComponentWithDerivatives( valread[i].substr(dot+1) );
         if( ifile->FieldExist("min_" + valread[i]) ) componentIsPeriodic( valread[i].substr(dot+1), "-pi", "pi" );
         else componentIsNotPeriodic( valread[i].substr(dot+1) );
       }
     }
   } else {
     if( valread.size()!=1 ) error("all values must be from the same Action when using READ");
-    readvals.emplace_back(new Value(this, valread[0], false) ); addValueWithDerivatives();
+    readvals.emplace_back(Tools::make_unique<Value>(this, valread[0], false) ); addValueWithDerivatives();
     if( ifile->FieldExist("min_" + valread[0]) ) setPeriodic( "-pi", "pi" );
     else setNotPeriodic();
     log.printf("  reading value %s and storing as %s\n",valread[0].c_str(),getLabel().c_str() );
@@ -207,7 +222,7 @@ void Read::prepare() {
     double du_time;
     if( !ifile->scanField("time",du_time) ) {
       error("Reached end of file " + filename + " before end of trajectory");
-    } else if( fabs( du_time-getTime() )>plumed.getAtoms().getTimeStep() && !ignore_time ) {
+    } else if( std::abs( du_time-getTime() )>plumed.getAtoms().getTimeStep() && !ignore_time ) {
       std::string str_dutime,str_ptime; Tools::convert(du_time,str_dutime); Tools::convert(getTime(),str_ptime);
       error("mismatched times in colvar files : colvar time=" + str_dutime + " plumed time=" + str_ptime + ". Add IGNORE_TIME to ignore error.");
     }
@@ -232,7 +247,7 @@ void Read::update() {
   if( !cloned_file ) {
     for(unsigned i=0; i<nlinesPerStep; ++i) {
       ifile->scanField(); double du_time;
-      if( plumed.getAtoms().getNatoms()==0 && !ifile->scanField("time",du_time) ) plumed.stop();
+      if( !ifile->scanField("time",du_time) && plumed.getAtoms().getNatoms()==0 ) plumed.stop();
     }
   }
 }
