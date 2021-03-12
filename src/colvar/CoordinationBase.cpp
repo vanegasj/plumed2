@@ -50,13 +50,10 @@ CoordinationBase::CoordinationBase(const ActionOptions&ao):
 
   parseFlag("SERIAL",serial);
 
-<<<<<<< HEAD
   parseFlag("XY",XY);
 
-  vector<AtomNumber> ga_lista,gb_lista;
-=======
+//  vector<AtomNumber> ga_lista,gb_lista;
   std::vector<AtomNumber> ga_lista,gb_lista;
->>>>>>> c280bb02880f0e3cf208aae5928bd0f831cf01d9
   parseAtomList("GROUPA",ga_lista);
   parseAtomList("GROUPB",gb_lista);
 
